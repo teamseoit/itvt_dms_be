@@ -1,0 +1,25 @@
+# Enviroments
+/uploads
+/backups
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# dotenv environment variable files
+.env
+.env.*
+!.env.sample
+
+
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store

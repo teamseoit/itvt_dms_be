@@ -1,52 +1,83 @@
 const jwt = require('jsonwebtoken');
 const sha512 = require('js-sha512');
+const Users = require('../../models/users/model');
+const TokenModel = require('../../models/users/token');
 
-const Users = require("../../models/users/model");
-const ModelToken = require('../../models/users/token');
+const generateAccessToken = ({ _id, username, group_user_id }) => {
+  return jwt.sign(
+    { _id, username, group_user_id },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+};
+
+const hashPassword = (password) => sha512(password);
 
 const loginController = {
-  login: async(req, res) => {
+  login: async (req, res) => {
     try {
-      const {username, password} = req.body;
-      const validUser = await Users.findOne({username}).lean();
-      if (!validUser) {
-        return res.status(400).json({message: 'Tài khoản không tồn tại! Vui lòng nhập lại thông tin!'});
+      const { username, password } = req.body;
+
+      const user = await Users.findOne({ username }).lean();
+      if (!user) {
+        return res.status(400).json({ message: 'Tài khoản không tồn tại! Vui lòng nhập lại thông tin!' });
       }
 
-      const hashedPassword = sha512(password);
-      if (hashedPassword !== validUser.password) {
+      if (hashPassword(password) !== user.password) {
         return res.status(400).json({ message: 'Mật khẩu không đúng! Vui lòng nhập lại thông tin!' });
       }
 
-      if (!validUser.group_user_id) {
-        return res.status(400).json({ message: 'Tài khoản của bạn chưa được phân quyền! Vui lòng đăng nhập lại sau!' });
+      if (!user.group_user_id) {
+        return res.status(403).json({ message: 'Tài khoản của bạn chưa được phân quyền! Vui lòng đăng nhập lại sau!' });
       }
 
-      const token = jwt.sign({ ...validUser }, process.env.JWT_SECRET);
-      await new ModelToken({
-        user_id: validUser._id,
-        token: token
-      }).save();
+      const accessToken = generateAccessToken(user);
 
-      return res.json({
-        token: token,
-        display_name: validUser.display_name,
-        group_user_id: validUser.group_user_id
+      await TokenModel.create({
+        user_id: user._id,
+        token: accessToken,
       });
-    } catch(error) {
-      console.error(error);
-      return res.status(400).send(error.message);
+
+      res.setHeader('Authorization', `Bearer ${accessToken}`);
+
+      return res.status(200).json({
+        message: 'Đăng nhập thành công!',
+        data: {
+          role: user.group_user_id,
+          user_info: {
+            _id: user._id,
+            username: user.username,
+            display_name: user.display_name,
+            email: user.email,
+          },
+          token: accessToken,
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Đã xảy ra lỗi khi đăng nhập.', error: error.message });
     }
   },
 
   logout: async (req, res) => {
     try {
-      res.cookie('access_token', '', { httpOnly: true, expires: new Date(0) });  
+      const authHeader = req.headers['authorization'];
+      const token = authHeader?.split(' ')[1]?.trim();
+
+      if (!token) {
+        return res.status(400).json({ message: 'Không tìm thấy token để đăng xuất.' });
+      }
+
+      const result = await TokenModel.deleteOne({ token });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: 'Token không tồn tại hoặc đã bị xoá.' });
+      }
+
       return res.status(200).json({ message: 'Đăng xuất thành công!' });
-    } catch (err) {
-      return res.status(500).json({ error: err.message });
+    } catch (error) {
+      return res.status(500).json({ message: 'Đã xảy ra lỗi khi đăng xuất.', error: error.message });
     }
-  },
-}
+  }
+};
 
 module.exports = loginController;

@@ -37,7 +37,7 @@ const init = async () =>{
     await new Users({
       display_name: "IT Vũng Tàu",
       username: "itvt",
-      password: sha512('itvt!@#$%vt533'),
+      password: sha512('abc123'),
       email: "teamseoit@gmail.com",
       group_user_id: "6684196550a34692df218d8d"
     }).save()

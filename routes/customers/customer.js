@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const upload = require('../../middleware/upload');
 const customerController = require("../../controllers/customers/controller");
-const { check_role } = require("../../middleware/middleware_role");
+const { check_role } = require("../../middleware/role_middleware");
 
 router.post('/', check_role("667463d04bede188dfb46d7e"), upload.fields([
   { name: 'image_front_view', maxCount: 1 },

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const groupUserController = require("../../controllers/group-user/controller");
-const { check_role } = require("../../middleware/middleware_role");
+const { check_role } = require("../../middleware/role_middleware");
 
 router.post("/", check_role("66746193cb45907845239f39"), groupUserController.addGroupUser);
 router.get("/", groupUserController.getGroupUser);

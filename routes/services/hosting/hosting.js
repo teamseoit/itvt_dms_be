@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { check_role } = require("../../../middleware/middleware_role");
+const { check_role } = require("../../../middleware/role_middleware");
 const hostingServicesController = require("../../../controllers/services/hosting/controller");
 
 router.post("/", check_role("667467eb263fb998b9925d31"), hostingServicesController.addHostingServices);

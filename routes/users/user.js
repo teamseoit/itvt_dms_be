@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { check_role } = require("../../middleware/middleware_role");
+const { check_role } = require("../../middleware/role_middleware");
 const userController = require("../../controllers/users/controller");
 
 router.post("/", check_role("66746193cb45907845239f36"), userController.addUser);

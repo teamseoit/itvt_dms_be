@@ -3,7 +3,6 @@ const validator = require('validator');
 
 const Users = require("../../models/users/model");
 const sha512 = require('js-sha512');
-const ModelToken = require('../../models/users/token');
 const logAction = require("../../middleware/action_logs");
 
 const userController = {

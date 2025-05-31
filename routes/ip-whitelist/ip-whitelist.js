@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const ipWhiteListController = require("../../controllers/ip-whitelist/controller");
-const { check_role } = require("../../middleware/middleware_role");
+const { check_role } = require("../../middleware/role_middleware");
 
 router.get("/", check_role("643263d04bede188fff66d76"), ipWhiteListController.getIpWhitelist);
 router.post("/", check_role("643263d04bede188dff66d76"), ipWhiteListController.addIpWhitelist);

@@ -1,11 +1,9 @@
-const fs = require('fs-extra');
-const path = require('path');
-const validator = require('validator');
-const { ObjectId } = require('mongoose').Types;
-
 const Customer = require("../../models/customers/model");
 const logAction = require("../../middleware/actionLogs");
-
+const { ObjectId } = require("mongoose").Types;
+const fs = require("fs-extra");
+const path = require("path");
+const validator = require("validator");
 const DomainServices = require("../../models/services/domain/model");
 const HostingServices = require("../../models/services/hosting/model");
 const EmailServices = require("../../models/services/email/model");
@@ -16,199 +14,134 @@ const ToplistServices = require("../../models/services/toplist/model");
 const MaintenanceServices = require("../../models/services/maintenance/model");
 const MobileNetworkServices = require("../../models/services/mobile-network/model");
 
+const checkServicesLinked = async (customerId) => {
+  const services = [
+    DomainServices, HostingServices, EmailServices, SslServices,
+    WebsiteServices, ContentServices, ToplistServices,
+    MaintenanceServices, MobileNetworkServices
+  ];
+  for (const svc of services) if (await svc.exists({ customer_id: customerId })) return true;
+  return false;
+};
+
 const customerController = {
-  addCustomer: async(req, res) => {
+  addCustomer: async (req, res) => {
     try {
-      const {
-        fullname,
-        email,
-        gender,
-        idNumber,
-        phone,
-        address,
-        company,
-        tax_code,
-        address_company,
-        representative,
-        representative_hotline,
-        mail_vat,
-        type_customer,
-      } = req.body;
+      const data = req.body;
+      const { email, idNumber, phone } = data;
 
       if (email && !validator.isEmail(email)) {
-        return res.status(400).json({ message: 'Email không hợp lệ! Vui lòng nhập email đúng định dạng!' });
+        return res.status(400).json({ message: 'Email không hợp lệ!' });
       }
 
-      const existingCustomer = await Customer.findOne({ $or: [{email}, {idNumber}, {phone}] });
-      if (existingCustomer) {
-        let errorMessage = '';
-        if (existingCustomer.email === email) {
-          errorMessage = 'Email đã tồn tại! Vui lòng nhập email khác!';
-        } else if (existingCustomer.idNumber === idNumber) {
-          errorMessage = 'CCCD đã tồn tại! Vui lòng nhập CCCD khác!';
-        } else if (existingCustomer.phone === phone) {
-          errorMessage = 'Số điện thoại đã tồn tại! Vui lòng nhập số khác!';
-        }
-        return res.status(400).json({message: errorMessage});
+      const exists = await Customer.findOne({ $or: [{ email }, { idNumber }, { phone }] });
+      if (exists) {
+        const conflictField = exists.email === email ? 'Email' :
+                              exists.idNumber === +idNumber ? 'CCCD' : 'Số điện thoại';
+        return res.status(400).json({ message: `${conflictField} đã tồn tại!` });
       }
 
-      const newCustomer = new Customer({
-        fullname,
-        email,
-        gender,
-        idNumber,
-        phone,
-        address,
-        company,
-        tax_code,
-        address_company,
-        representative,
-        representative_hotline: representative_hotline,
-        mail_vat: mail_vat,
-        image_front_view: req.files['image_front_view'] ? req.files['image_front_view'].map(file => file.path) : [],
-        image_back_view: req.files['image_back_view'] ? req.files['image_back_view'].map(file => file.path) : [],
-        type_customer
+      const customer = new Customer({
+        ...data,
+        image_front_view: req.files?.image_front_view?.map(f => f.path) || [],
+        image_back_view: req.files?.image_back_view?.map(f => f.path) || []
       });
 
-      const saveCustomer = await newCustomer.save();
+      const saved = await customer.save();
       await logAction(req.auth._id, 'Khách hàng', 'Thêm mới');
-      return res.status(200).json(saveCustomer);
-    } catch(err) {
-      console.error('Lỗi máy chủ:', err);
-      return res.status(500).json({ message: 'Có lỗi xảy ra, vui lòng thử lại!' });
+      return res.status(200).json(saved);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Lỗi máy chủ, vui lòng thử lại!' });
     }
   },
 
-  getCustomer: async(req, res) => {
+  getCustomer: async (req, res) => {
     try {
       const { keyword } = req.query;
+      const filter = keyword ? {
+        $or: [
+          { fullname: { $regex: keyword, $options: 'i' } },
+          { email: { $regex: keyword, $options: 'i' } }
+        ]
+      } : {};
 
-      let filter = {};
-      if (keyword) {
-        filter = {
-          $or: [
-            { fullname: { $regex: keyword, $options: 'i' } },
-            { email: { $regex: keyword, $options: 'i' } }
-          ]
-        };
-      }
-
-      const customers = await Customer.find(filter).sort({"createdAt": -1});
+      const customers = await Customer.find(filter).sort({ createdAt: -1 });
       return res.status(200).json(customers);
-    } catch(err) {
-      console.error(err);
+    } catch (err) {
       return res.status(500).send(err.message);
     }
   },
 
-  getDetailCustomer: async(req, res) => {
+  getDetailCustomer: async (req, res) => {
     try {
-      const customers = await Customer.findById(req.params.id).populate('data_service').exec();
-      return res.status(200).json(customers);
-    } catch(err) {
-      console.error(err);
+      const customer = await Customer.findById(req.params.id).populate('data_service');
+      if (!customer) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
+      return res.status(200).json(customer);
+    } catch (err) {
       return res.status(500).send(err.message);
     }
   },
 
-  deleteCustomer: async(req, res) => {
+  updateCustomer: async (req, res) => {
     try {
-      // const customer = await Customer.findByIdAndDelete(req.params.id);
+      const { id } = req.params;
+      const updateData = { ...req.body };
+
+      if (req.files?.image_front_view) updateData.image_front_view = req.files.image_front_view.map(f => f.path);
+      if (req.files?.image_back_view) updateData.image_back_view = req.files.image_back_view.map(f => f.path);
+
+      const updated = await Customer.findByIdAndUpdate(id, { $set: updateData }, { new: true });
+      if (!updated) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
+
+      await logAction(req.auth._id, 'Khách hàng', 'Cập nhật', `/trang-chu/khach-hang/cap-nhat-khach-hang/${id}`);
+      return res.status(200).json("Cập nhật thành công!");
+    } catch (err) {
+      return res.status(500).send(err.message);
+    }
+  },
+
+  deleteCustomer: async (req, res) => {
+    try {
       const customer = await Customer.findById(req.params.id);
-      if (!customer) {
-        return res.status(404).send('Không tìm thấy khách hàng!');
-      }
+      if (!customer) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
 
-      const customerId = req.params.id;
-      const domainServicesExists = await DomainServices.findOne({ customer_id: customerId });
-      const hostingServicesExists = await HostingServices.findOne({ customer_id: customerId });
-      const emailServicesExists = await EmailServices.findOne({ customer_id: customerId });
-      const sslServicesExists = await SslServices.findOne({ customer_id: customerId });
-      const websiteServicesExists = await WebsiteServices.findOne({ customer_id: customerId });
-      const contentServicesExists = await ContentServices.findOne({ customer_id: customerId });
-      const toplistServicesExists = await ToplistServices.findOne({ customer_id: customerId });
-      const maintenanceSericesExists = await MaintenanceServices.findOne({ customer_id: customerId });
-      const mobileNetworkServicesExists = await MobileNetworkServices.findOne({ customer_id: customerId });
-
-      if (domainServicesExists || hostingServicesExists || emailServicesExists || sslServicesExists || websiteServicesExists || contentServicesExists || toplistServicesExists || maintenanceSericesExists || mobileNetworkServicesExists) {
+      if (await checkServicesLinked(customer._id)) {
         return res.status(400).json({ message: "Không thể xóa khách hàng khi đang được sử dụng!" });
       }
 
-      const deleteFiles = async (filePaths) => {
-        for (const filePath of filePaths) {
-          try {
-            await fs.remove(path.resolve(filePath));
-          } catch (err) {
-            console.error(`Lỗi xóa tập tin: ${filePath}`, err);
-          }
-        }
+      const deleteFiles = async (paths) => {
+        for (const file of paths) await fs.remove(path.resolve(file));
       };
-  
+
       await deleteFiles(customer.image_front_view);
       await deleteFiles(customer.image_back_view);
-  
+
       await Customer.findByIdAndDelete(req.params.id);
       await logAction(req.auth._id, 'Khách hàng', 'Xóa');
-      return res.status(200).send('Xóa thành công!');
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);    }
-  },
-
-  updateCustomer: async(req, res) => {
-    try {
-      const customer = await Customer.findById(req.params.id);
-
-      if (!customer) {
-        return res.status(404).send('Không tìm thấy khách hàng!');
-      }
-
-      const updateData = { ...req.body };
-
-      if (req.files['image_front_view']) {
-        updateData.image_front_view = req.files['image_front_view'].map(file => file.path);
-      }
-
-      if (req.files['image_back_view']) {
-        updateData.image_back_view = req.files['image_back_view'].map(file => file.path);
-      }
-
-      await Customer.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
-      await logAction(req.auth._id, 'Khách hàng', 'Cập nhật', `/trang-chu/khach-hang/cap-nhat-khach-hang/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
+      return res.status(200).send("Xóa thành công!");
+    } catch (err) {
       return res.status(500).send(err.message);
     }
   },
 
-  getGuestsCustomer: async(req, res) => {
+  getGuestsCustomer: async (req, res) => {
     try {
-      var guests_customer = await Customer.find(
-        {
-          type_customer: false
-        }
-      ).sort({"createdAt": -1});
-      return res.status(200).json(guests_customer);
-    } catch(err) {
-      console.error(err);
+      const guests = await Customer.find({ type_customer: false }).sort({ createdAt: -1 });
+      return res.status(200).json(guests);
+    } catch (err) {
       return res.status(500).send(err.message);
     }
   },
 
-  getCompanyCustomer: async(req, res) => {
+  getCompanyCustomer: async (req, res) => {
     try {
-      var company_customer = await Customer.find(
-        {
-          type_customer: true
-        }
-      ).sort({"createdAt": -1});
-      return res.status(200).json(company_customer);
-    } catch(err) {
-      console.error(err);
+      const companies = await Customer.find({ type_customer: true }).sort({ createdAt: -1 });
+      return res.status(200).json(companies);
+    } catch (err) {
       return res.status(500).send(err.message);
     }
-  },
-}
+  }
+};
 
 module.exports = customerController;

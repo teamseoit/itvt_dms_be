@@ -1,43 +1,30 @@
 const path = require('path');
-const multer = require("multer");
+const multer = require('multer');
 const fs = require('fs');
 
 const createDir = (dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const uploadDir = path.join('uploads', year.toString(), month);
-
+    const uploadDir = path.join('uploads', `${now.getFullYear()}`, `${now.getMonth() + 1}`.padStart(2, '0'));
     createDir(uploadDir);
     cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    let ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}${path.extname(file.originalname)}`);
   }
 });
 
-var upload = multer({
-  storage: storage,
-  fileFilter: function (req, file, callback) {
-    const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
-    if (allowedTypes.includes(file.mimetype)) {
-      callback(null, true);
-    } else {
-      console.log('Chỉ hỗ trợ png, jpg, jpeg!');
-      callback(null, false);
-    }
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/png", "image/jpg", "image/jpeg"];
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(null, false);
   },
-  limits: {
-    fileSize: 1024 * 1024 * 4 // 4 MB
-  }
+  limits: { fileSize: 4 * 1024 * 1024 } // 4MB
 });
 
 module.exports = upload;

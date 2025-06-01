@@ -16,7 +16,6 @@ const ipWhiteListController = {
       const data = new IpWhitelists(req.body);
       const saveData = await data.save();
       await logAction(req.auth._id, 'IP Whitelist', 'Thêm mới');
-      console.log(req.auth._id);
       return res.status(200).json(saveData);
     } catch(err) {
       console.error(err);

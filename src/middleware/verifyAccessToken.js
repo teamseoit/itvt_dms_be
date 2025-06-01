@@ -14,7 +14,6 @@ const verifyAccessToken = (req, res, next) => {
     req.auth = decoded;
     next();
   } catch (err) {
-    console.error('Access Token lỗi:', err.message);
     return res.status(403).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });
   }
 };

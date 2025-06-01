@@ -4,7 +4,7 @@ const sha512 = require('js-sha512');
 
 const Users = require("../../models/users/model");
 const logAction = require("../../middleware/actionLogs");
-const { addUserSchema } = require('../../validators/user.validator');
+const { addUserSchema } = require('../../validators/userValidator');
 
 const hashPassword = (password) => sha512(password);
 

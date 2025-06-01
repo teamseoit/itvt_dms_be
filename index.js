@@ -8,7 +8,7 @@ const corsOptions = require("./src/config/corsOptions");
 const config = require("./src/config/env");
 const connectDB = require("./src/config/connectDB");
 const verifyAccessToken = require("./src/middleware/verifyAccessToken");
-const initDefaultUser = require("./src/init/initUser");
+const initAll = require("./src/init");
 const loadRoutes = require("./src/utils/loadRoutes");
 
 const app = express();
@@ -24,8 +24,7 @@ app.use("/uploads", express.static("uploads"));
 const startServer = async () => {
   try {
     await connectDB();
-
-    await initDefaultUser();
+    await initAll();
 
     loadRoutes(app, verifyAccessToken);
 

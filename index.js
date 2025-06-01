@@ -4,12 +4,12 @@ const cors = require("cors");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 
-const corsOptions = require("./config/corsOptions");
-const config = require("./config/env");
-const connectDB = require("./config/connectDB");
-const verifyAccessToken = require("./middleware/verifyAccessToken");
-const initDefaultUser = require("./init/initUser");
-const loadRoutes = require("./utils/loadRoutes");
+const corsOptions = require("./src/config/corsOptions");
+const config = require("./src/config/env");
+const connectDB = require("./src/config/connectDB");
+const verifyAccessToken = require("./src/middleware/verifyAccessToken");
+const initDefaultUser = require("./src/init/initUser");
+const loadRoutes = require("./src/utils/loadRoutes");
 
 const app = express();
 

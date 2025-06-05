@@ -3,7 +3,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
   const authRoutes = require("../routes/auth/login");
 
   // các chức năng
-  const functionRoutes = require("../routes/roles/functions");
+  const roleRoutes = require("../routes/roles/roles");
 
   // lịch sử thao tác
   const actionLogsRoutes = require("../routes/action-logs/actionLogs");
@@ -62,7 +62,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     { path: "/api/auth", handler: authRoutes },
 
     // các chức năng
-    { path: "/api/functions", handler: functionRoutes, protected: true },
+    { path: "/api/permissions", handler: roleRoutes, protected: true },
 
     // lích sử thao tác
     { path: "/api/action-logs", handler: actionLogsRoutes, protected: true },

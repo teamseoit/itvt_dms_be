@@ -23,7 +23,12 @@ const authController = {
   login: async (req, res) => {
     try {
       const { username, password } = req.body;
-      const user = await Users.findOne({ username }).lean();
+      const user = await Users.findOne({
+      $or: [
+        { username: username },
+        { email: username }
+      ]
+    }).lean();
 
       if (!user || hashPassword(password) !== user.password) {
         return res.status(400).json({ message: 'Tài khoản hoặc mật khẩu không đúng!' });

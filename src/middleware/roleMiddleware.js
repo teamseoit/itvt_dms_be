@@ -1,17 +1,17 @@
-const ModelFunction = require('../models/functions/functions')
+const Permissions = require('../models/permissions/model')
 const jwt = require('jsonwebtoken');
-const ModelToken = require('../models/auth/token')
-const ModelRole = require('../models/functions/roles')
+const Token = require('../models/auth/token')
+const Role = require('../models/roles/model')
 const {ObjectId} = require('mongoose').Types
 
-exports.check_role = (function_id) =>{
+exports.check_role = (permission_id) =>{
   return async (req, res, next) =>{
     try{
       const auth = req.auth;
-      const count = await ModelRole.countDocuments({
+      const count = await Role.countDocuments({
         $and:[
-          {function_id: new ObjectId(function_id)},
-          {user_id: new ObjectId(auth._id)}
+          {permission_id: new ObjectId(permission_id)},
+          {group_user_id: new ObjectId(auth._id)}
         ]
       })
 

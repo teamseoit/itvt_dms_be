@@ -1,13 +1,13 @@
-const Functions = require('../../models/functions/functions');
+const Permissions = require('../../models/permissions/model');
 const GroupUsers = require('../../models/group-user/model');
-const Roles = require('../../models/functions/roles');
+const Roles = require('../../models/roles/model');
 const {ObjectId} = require('mongoose').Types
 
-const functionController = {
-  getFunction: async(req, res) => {
+const roleController = {
+  getPermission: async(req, res) => {
     try {
-      const functions = await Functions.find();
-      return res.status(200).json(functions);
+      const permissions = await Permissions.find();
+      return res.status(200).json(permissions);
     } catch(err) {
       console.error(err);
       return res.status(400).send(err.message);
@@ -66,4 +66,4 @@ const functionController = {
   }
 }
 
-module.exports = functionController;
+module.exports = roleController;

@@ -1,18 +1,8 @@
-const Permissions = require('../../models/permissions/model');
 const GroupUsers = require('../../models/group-user/model');
 const Roles = require('../../models/roles/model');
 const {ObjectId} = require('mongoose').Types
 
 const roleController = {
-  getPermission: async(req, res) => {
-    try {
-      const permissions = await Permissions.find();
-      return res.status(200).json(permissions);
-    } catch(err) {
-      console.error(err);
-      return res.status(400).send(err.message);
-    }
-  },
   addRole: async(req, res) => {
     try {
       const {name, description, group} = req.body;

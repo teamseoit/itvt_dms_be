@@ -4,6 +4,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
 
   // các chức năng
   const roleRoutes = require("../routes/roles/roles");
+  const permissionRoutes = require("../routes/permissions/permissions");
 
   // lịch sử thao tác
   const actionLogsRoutes = require("../routes/action-logs/actionLogs");
@@ -62,9 +63,10 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     { path: "/api/auth", handler: authRoutes },
 
     // các chức năng
-    { path: "/api/permissions", handler: roleRoutes, protected: true },
+    { path: "/api/roles", handler: roleRoutes, protected: true },
+    { path: "/api/permissions", handler: permissionRoutes, protected: true },
 
-    // lích sử thao tác
+    // lịch sử thao tác
     { path: "/api/action-logs", handler: actionLogsRoutes, protected: true },
 
     // ip whitelist

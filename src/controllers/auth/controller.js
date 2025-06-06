@@ -155,12 +155,12 @@ const authController = {
 
   logout: async (req, res) => {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        return res.status(400).json({ message: 'Không tìm thấy người dùng để đăng xuất.' });
+      const { user_id } = req.body;
+      if (!user_id) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp tài khoản để đăng xuất.' });
       }
 
-      const result = await TokenModel.deleteOne({ user_id: userId });
+      const result = await TokenModel.deleteOne({ user_id });
 
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Không tìm thấy refresh token trong DB để xóa.' });

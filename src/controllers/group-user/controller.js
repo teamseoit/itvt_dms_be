@@ -140,14 +140,20 @@ const groupUserController = {
     try {
       const { id } = req.params;
 
-      const userUsed = await Users.findOne({ group_user_id: id });
-      if (userUsed) {
-        return res.status(400).json({ success: false, message: "Không thể xóa nhóm quyền khi đang được sử dụng!" });
+      const isGroupInUse = await Users.findOne({ group_user_id: id });
+      if (isGroupInUse) {
+        return res.status(400).json({
+          success: false,
+          message: "Không thể xóa nhóm quyền khi đang được sử dụng!"
+        });
       }
 
-      const deleted = await GroupUsers.findByIdAndDelete(id);
-      if (!deleted) {
-        return res.status(404).json({ success: false, message: "Không tìm thấy nhóm quyền để xóa." });
+      const deletedGroup = await GroupUsers.findByIdAndDelete(id);
+      if (!deletedGroup) {
+        return res.status(404).json({
+          success: false, 
+          message: "Không tìm thấy nhóm quyền để xóa."
+        });
       }
 
       await logAction(req.auth._id, 'Nhóm quyền', 'Xóa');
@@ -155,7 +161,7 @@ const groupUserController = {
       return res.status(200).json({
         success: true,
         message: "Xóa nhóm quyền thành công.",
-        data: deleted
+        data: deletedGroup
       });
     } catch (error) {
       console.error("Error deleting group user:", error);

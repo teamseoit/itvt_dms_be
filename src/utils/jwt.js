@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const generateAccessToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m' }); // Access Token: sống 15 phút, dùng để truy cập API
+  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: '7d' }); // Access Token: sống 15 phút, dùng để truy cập API
 };
 
 const generateRefreshToken = (payload) => {

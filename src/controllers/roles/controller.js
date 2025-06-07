@@ -39,10 +39,18 @@ const roleController = {
   getRoles: async(req, res) => {
     try {
       const roles = await Roles.find();
-      return res.status(200).json(roles);
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách vai trò thành công",
+        data: roles
+      });
     } catch(err) {
       console.error(err);
-      return res.status(400).send(err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Lỗi khi lấy danh sách vai trò",
+        error: err.message
+      });
     }
   },
   getRolesByGroupUserId: async(req, res) => {

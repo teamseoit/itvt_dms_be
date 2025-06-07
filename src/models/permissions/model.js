@@ -35,7 +35,7 @@ const init = async () => {
         {
             _id: new ObjectId("66746193cb45907845239f37"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
-            name: "Reset mật khẩu",
+            name: "Cập nhật mật khẩu",
         },
         {
             _id: new ObjectId("66746193cb45907845239f38"),

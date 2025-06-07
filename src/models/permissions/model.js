@@ -50,17 +50,17 @@ const init = async () => {
         {
             _id: new ObjectId("66746193cb45907845239f39"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
-            name: "Tạo nhóm người dùng",
+            name: "Tạo nhóm quyền",
         },
         {
             _id: new ObjectId("66746193cb45907845239f3a"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
-            name: "Sửa nhóm người dùng",
+            name: "Sửa nhóm quyền",
         },
         {
             _id: new ObjectId("66746193cb45907845239f4a"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
-            name: "Xóa nhóm người dùng",
+            name: "Xóa nhóm quyền",
         },
 
         // nhà cung cấp

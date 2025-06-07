@@ -1,12 +1,10 @@
 const router = require("express").Router();
 const groupUserController = require("../../controllers/group-user/controller");
 const { check_role } = require("../../middleware/roleMiddleware");
-const validate = require('../../middleware/validate');
-const { createGroupUserSchema, updateGroupUserSchema } = require('../../validators/groupUserValidator');
 
 router.post(
   "/",
-  [check_role("66746193cb45907845239f39"), validate(createGroupUserSchema)],
+  check_role("66746193cb45907845239f39"),
   groupUserController.addGroupUser
 );
 
@@ -16,7 +14,7 @@ router.get("/:id", groupUserController.getDetailGroupUser);
 
 router.put(
   "/:id",
-  [check_role("66746193cb45907845239f3a"), validate(updateGroupUserSchema)],
+  check_role("66746193cb45907845239f3a"),
   groupUserController.updateGroupUser
 );
 

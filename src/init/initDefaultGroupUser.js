@@ -17,7 +17,7 @@ const initDefaultGroupUsers = async () => {
       await GroupUsers.insertMany(data);
     }
   } catch (err) {
-    console.error("Không thể khởi tạo nhóm người dùng:", err);
+    console.error("Không thể khởi tạo nhóm quyền:", err);
   }
 };
 

@@ -1,15 +1,8 @@
 const Joi = require("joi");
 const GroupUsers = require("../../models/group-user/model");
 const Users = require("../../models/users/model");
+const Roles = require("../../models/roles/model");
 const logAction = require("../../middleware/actionLogs");
-
-const groupUserSchema = Joi.object({
-  name: Joi.string().trim().min(3).max(100).required().messages({
-    'string.empty': 'Tên nhóm không được để trống.',
-    'string.min': 'Tên nhóm phải có ít nhất 3 ký tự.',
-    'any.required': 'Vui lòng nhập tên nhóm quyền.'
-  })
-});
 
 const groupUserController = {
   getGroupUser: async (req, res) => {
@@ -47,27 +40,40 @@ const groupUserController = {
 
   addGroupUser: async (req, res) => {
     try {
-      const { error } = groupUserSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({ success: false, message: error.details[0].message });
-      }
-
-      const { name } = req.body;
+      const { name, description, permissions } = req.body;
 
       const exists = await GroupUsers.findOne({ name });
       if (exists) {
         return res.status(400).json({ success: false, message: "Tên nhóm quyền đã tồn tại!" });
       }
 
-      const newGroupUser = new GroupUsers({ name });
-      const saved = await newGroupUser.save();
+      const newGroupUser = new GroupUsers({
+        name,
+        description
+      });
+      
+      const savedGroupUser = await newGroupUser.save();
+
+      if (permissions && permissions.length > 0) {
+        const roleEntries = permissions.map(permission_id => ({
+          permission_id,
+          group_user_id: savedGroupUser._id
+        }));
+
+        await Roles.insertMany(roleEntries);
+      }
 
       await logAction(req.auth._id, 'Nhóm quyền', 'Thêm mới');
+
+      const groupWithPermissions = {
+        ...savedGroupUser.toObject(),
+        permissions: permissions || []
+      };
 
       return res.status(201).json({
         success: true,
         message: "Thêm nhóm quyền thành công.",
-        data: saved
+        data: groupWithPermissions
       });
     } catch (error) {
       console.error("Error adding group user:", error);
@@ -87,13 +93,21 @@ const groupUserController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy nhóm quyền." });
       }
 
+      const permissions = await Roles.find({ group_user_id: id })
+        .select('permission_id -_id');
+
+      const groupWithPermissions = {
+        ...groupUser.toObject(),
+        permissions: permissions.map(p => p.permission_id)
+      };
+
       return res.status(200).json({
         success: true,
         message: "Lấy chi tiết nhóm quyền thành công.",
-        data: groupUser
+        data: groupWithPermissions
       });
     } catch (error) {
-      console.error("Error getting group user details:", error);
+      console.error("Error fetching group user details:", error);
       return res.status(500).json({
         success: false,
         message: "Lỗi máy chủ khi lấy chi tiết nhóm quyền."
@@ -103,16 +117,13 @@ const groupUserController = {
 
   updateGroupUser: async (req, res) => {
     try {
-      const { error } = groupUserSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({ success: false, message: error.details[0].message });
-      }
-
       const { id } = req.params;
+      const { name, description, permissions } = req.body;
 
+      // Update basic group user info
       const updated = await GroupUsers.findByIdAndUpdate(
         id,
-        { $set: req.body },
+        { name, description },
         { new: true }
       );
 
@@ -120,12 +131,37 @@ const groupUserController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy nhóm quyền để cập nhật." });
       }
 
-      await logAction(req.auth._id, 'Nhóm người dùng', 'Cập nhật', `/tai-khoan/cap-nhat-tai-khoan/${id}`);
+      // Update permissions if provided
+      if (permissions) {
+        // First remove all existing permissions for this group
+        await Roles.deleteMany({ group_user_id: id });
+
+        // Then add new permissions
+        if (permissions.length > 0) {
+          const roleEntries = permissions.map(permission_id => ({
+            permission_id,
+            group_user_id: id
+          }));
+
+          await Roles.insertMany(roleEntries);
+        }
+      }
+
+      await logAction(req.auth._id, 'Nhóm quyền', 'Cập nhật', `/tai-khoan/cap-nhat-tai-khoan/${id}`);
+
+      // Get updated group with its new permissions
+      const updatedPermissions = await Roles.find({ group_user_id: id })
+        .select('permission_id -_id');
+
+      const groupWithPermissions = {
+        ...updated.toObject(),
+        permissions: updatedPermissions.map(p => p.permission_id)
+      };
 
       return res.status(200).json({
         success: true,
         message: "Cập nhật nhóm quyền thành công.",
-        data: updated
+        data: groupWithPermissions
       });
     } catch (error) {
       console.error("Error updating group user:", error);
@@ -139,6 +175,12 @@ const groupUserController = {
   deleteGroupUser: async (req, res) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: "ID không được cung cấp"
+        });
+      }
 
       const isGroupInUse = await Users.findOne({ group_user_id: id });
       if (isGroupInUse) {
@@ -155,6 +197,9 @@ const groupUserController = {
           message: "Không tìm thấy nhóm quyền để xóa."
         });
       }
+
+      // Delete all associated roles
+      await Roles.deleteMany({ group_user_id: id });
 
       await logAction(req.auth._id, 'Nhóm quyền', 'Xóa');
 

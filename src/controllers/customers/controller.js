@@ -25,51 +25,142 @@ const checkServicesLinked = async (customerId) => {
 };
 
 const customerController = {
+  getCustomer: async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const { keyword, typeCustomer } = req.query;
+
+      const filter = {};
+
+      if (keyword) {
+        filter.$or = [
+          { fullName: { $regex: keyword, $options: 'i' } },
+          { email: { $regex: keyword, $options: 'i' } }
+        ];
+      }
+
+      if (typeCustomer !== undefined) {
+        if (typeCustomer === 'true') filter.typeCustomer = true;
+        else if (typeCustomer === 'false') filter.typeCustomer = false;
+      }
+
+      const [customers, total] = await Promise.all([
+        Customer.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Customer.countDocuments(filter)
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách khách hàng thành công.",
+        data: customers,
+        meta: {
+          page,
+          limit,
+          totalDocs: total,
+          totalPages
+        }
+      });
+    } catch (err) {
+      console.error('Error getting customers:', err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách khách hàng."
+      });
+    }
+  },
+
   addCustomer: async (req, res) => {
     try {
       const data = req.body;
-      const { email, idNumber, phone } = data;
+      const { email, identityNumber, phoneNumber } = data;
 
-      if (email && !validator.isEmail(email)) {
-        return res.status(400).json({ message: 'Email không hợp lệ!' });
+      if (!identityNumber) {
+        return res.status(400).json({
+          success: false,
+          message: 'CCCD là trường bắt buộc!'
+        });
       }
 
-      const exists = await Customer.findOne({ $or: [{ email }, { idNumber }, { phone }] });
-      if (exists) {
-        const conflictField = exists.email === email ? 'Email' :
-                              exists.idNumber === +idNumber ? 'CCCD' : 'Số điện thoại';
-        return res.status(400).json({ message: `${conflictField} đã tồn tại!` });
+      if (email && !validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email không hợp lệ!'
+        });
+      }
+  
+      const duplicateQuery = [];
+      
+      if (email) {
+        duplicateQuery.push({ email });
+      }
+      
+      if (identityNumber) {
+        duplicateQuery.push({ identityNumber });
+      }
+      
+      if (phoneNumber) {
+        duplicateQuery.push({ phoneNumber });
+      }
+
+      if (duplicateQuery.length > 0) {
+        const exists = await Customer.findOne({
+          $or: duplicateQuery
+        });
+
+        if (exists) {
+          const conflictField = exists.email === email ? 'Email' :
+            exists.identityNumber === identityNumber ? 'CCCD' : 
+            'Số điện thoại';
+
+          return res.status(400).json({
+            success: false,
+            message: `${conflictField} đã tồn tại!`
+          });
+        }
       }
 
       const customer = new Customer({
         ...data,
-        image_front_view: req.files?.image_front_view?.map(f => f.path) || [],
-        image_back_view: req.files?.image_back_view?.map(f => f.path) || []
+        identityCardFrontImage: req.files?.identityCardFrontImage?.[0]?.path || '',
+        identityCardBackImage: req.files?.identityCardBackImage?.[0]?.path || ''
       });
 
-      const saved = await customer.save();
+      const savedCustomer = await customer.save();
       await logAction(req.auth._id, 'Khách hàng', 'Thêm mới');
-      return res.status(200).json(saved);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Lỗi máy chủ, vui lòng thử lại!' });
-    }
-  },
 
-  getCustomer: async (req, res) => {
-    try {
-      const { keyword } = req.query;
-      const filter = keyword ? {
-        $or: [
-          { fullname: { $regex: keyword, $options: 'i' } },
-          { email: { $regex: keyword, $options: 'i' } }
-        ]
-      } : {};
+      return res.status(201).json({
+        success: true,
+        message: 'Thêm khách hàng thành công.',
+        data: savedCustomer
+      });
 
-      const customers = await Customer.find(filter).sort({ createdAt: -1 });
-      return res.status(200).json(customers);
     } catch (err) {
-      return res.status(500).send(err.message);
+      console.error('Error adding customer:', err);
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyPattern)[0];
+        const fieldName = field === 'email' ? 'Email' : 
+                         field === 'identityNumber' ? 'CCCD' : 
+                         field === 'phoneNumber' ? 'Số điện thoại' : field;
+        
+        return res.status(400).json({
+          success: false,
+          message: `${fieldName} đã tồn tại trong hệ thống!`
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ, vui lòng thử lại!'
+      });
     }
   },
 
@@ -103,43 +194,47 @@ const customerController = {
 
   deleteCustomer: async (req, res) => {
     try {
-      const customer = await Customer.findById(req.params.id);
-      if (!customer) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
+      const { id } = req.params;
+      const customer = await Customer.findById(id);
 
-      if (await checkServicesLinked(customer._id)) {
-        return res.status(400).json({ message: "Không thể xóa khách hàng khi đang được sử dụng!" });
+      if (!customer) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khách hàng!"
+        });
       }
 
-      const deleteFiles = async (paths) => {
-        for (const file of paths) await fs.remove(path.resolve(file));
+      const hasLinkedServices = await checkServicesLinked(customer._id);
+      if (hasLinkedServices) {
+        return res.status(400).json({
+          success: false, 
+          message: "Không thể xóa khách hàng khi đang được sử dụng!"
+        });
+      }
+
+      const deleteFiles = async (paths = []) => {
+        if (!Array.isArray(paths)) return;
+        await Promise.all(paths.map(file => fs.remove(path.resolve(file))));
       };
 
-      await deleteFiles(customer.image_front_view);
-      await deleteFiles(customer.image_back_view);
+      await Promise.all([
+        deleteFiles(customer.identityCardFrontImage),
+        deleteFiles(customer.identityCardBackImage),
+        Customer.findByIdAndDelete(id),
+        logAction(req.auth._id, 'Khách hàng', 'Xóa')
+      ]);
 
-      await Customer.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Khách hàng', 'Xóa');
-      return res.status(200).send("Xóa thành công!");
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  },
+      return res.status(200).json({
+        success: true,
+        message: "Xóa thành công!"
+      });
 
-  getGuestsCustomer: async (req, res) => {
-    try {
-      const guests = await Customer.find({ type_customer: false }).sort({ createdAt: -1 });
-      return res.status(200).json(guests);
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getCompanyCustomer: async (req, res) => {
-    try {
-      const companies = await Customer.find({ type_customer: true }).sort({ createdAt: -1 });
-      return res.status(200).json(companies);
-    } catch (err) {
-      return res.status(500).send(err.message);
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ, vui lòng thử lại!"
+      });
     }
   }
 };

@@ -1,29 +1,89 @@
 const mongoose = require("mongoose");
 
 const customerSchema = new mongoose.Schema({
-  fullname: { type: String, required: true, index: true },
-  email: { type: String, index: true },
-  gender: { type: Number, required: true },
-  idNumber: { type: Number, required: true },
-  phone: { type: Number, required: true, index: true },
-  address: String,
-  company: String,
-  tax_code: String,
-  address_company: String,
-  representative: String,
-  representative_hotline: String,
-  mail_vat: String,
-  image_front_view: [String],
-  image_back_view: [String],
-  type_customer: { type: Boolean, default: false }
-}, { timestamps: true });
+  fullName: { 
+    type: String, 
+    required: true, 
+    index: true,
+    trim: true
+  },
+  email: { 
+    type: String, 
+    index: true,
+    lowercase: true,
+    trim: true
+  },
+  gender: { 
+    type: Number, 
+    required: true,
+    enum: [0, 1, 2]
+  },
+  identityNumber: { 
+    type: Number, 
+    required: true,
+    unique: true
+  },
+  phoneNumber: { 
+    type: Number, 
+    required: true, 
+    index: true,
+    unique: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  companyName: {
+    type: String,
+    trim: true
+  },
+  taxCode: {
+    type: String,
+    trim: true
+  },
+  companyAddress: {
+    type: String,
+    trim: true
+  },
+  representativeName: {
+    type: String,
+    trim: true
+  },
+  representativePhone: {
+    type: String,
+    trim: true
+  },
+  vatEmail: {
+    type: String,
+    trim: true,
+    lowercase: true
+  },
+  identityCardFrontImage: {
+    type: String,
+    trim: true
+  },
+  identityCardBackImage: {
+    type: String,
+    trim: true
+  },
+  typeCustomer: { 
+    type: Boolean, 
+    default: false,
+    index: true
+  }
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-// Liên kết dịch vụ liên quan
-customerSchema.virtual('data_service', {
+customerSchema.index({ fullName: 'text', email: 'text' });
+
+customerSchema.virtual('services', {
   ref: 'DomainServices',
-  localField: '_id',
-  foreignField: 'customer_id',
-  justOne: false,
+  localField: '_id', 
+  foreignField: 'customerId',
+  justOne: false
 });
 
 module.exports = mongoose.model("Customers", customerSchema);

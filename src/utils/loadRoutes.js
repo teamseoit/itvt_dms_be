@@ -23,7 +23,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
   const customerRoutes = require("../routes/customers/customer");
 
   // nhà cung cấp
-  const supplierRoutes = require("../routes/suppliers/supplier");
+  const supplierServiceRoutes = require("../routes/suppliers/service");
   const mobileNetworkRoutes = require("../routes/suppliers/mobile-network");
   const serverRoutes = require("../routes/suppliers/server");
 
@@ -84,7 +84,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     { path: "/api/customer", handler: customerRoutes, protected: true },
 
     // nhà cung cấp
-    { path: "/api/supplier", handler: supplierRoutes, protected: true },
+    { path: "/api/supplier/service", handler: supplierServiceRoutes, protected: true },
     { path: "/api/mobile-network", handler: mobileNetworkRoutes, protected: true },
     { path: "/api/server", handler: serverRoutes, protected: true },
 

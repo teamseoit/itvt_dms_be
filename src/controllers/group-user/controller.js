@@ -120,7 +120,6 @@ const groupUserController = {
       const { id } = req.params;
       const { name, description, permissions } = req.body;
 
-      // Update basic group user info
       const updated = await GroupUsers.findByIdAndUpdate(
         id,
         { name, description },
@@ -131,12 +130,9 @@ const groupUserController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy nhóm quyền để cập nhật." });
       }
 
-      // Update permissions if provided
       if (permissions) {
-        // First remove all existing permissions for this group
         await Roles.deleteMany({ group_user_id: id });
 
-        // Then add new permissions
         if (permissions.length > 0) {
           const roleEntries = permissions.map(permission_id => ({
             permission_id,
@@ -147,9 +143,8 @@ const groupUserController = {
         }
       }
 
-      await logAction(req.auth._id, 'Nhóm quyền', 'Cập nhật', `/tai-khoan/cap-nhat-tai-khoan/${id}`);
+      await logAction(req.auth._id, 'Nhóm quyền', 'Cập nhật', `/tai-khoan/${id}`);
 
-      // Get updated group with its new permissions
       const updatedPermissions = await Roles.find({ group_user_id: id })
         .select('permission_id -_id');
 
@@ -198,7 +193,6 @@ const groupUserController = {
         });
       }
 
-      // Delete all associated roles
       await Roles.deleteMany({ group_user_id: id });
 
       await logAction(req.auth._id, 'Nhóm quyền', 'Xóa');

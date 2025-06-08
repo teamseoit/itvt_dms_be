@@ -166,36 +166,7 @@ const customerController = {
 
   getDetailCustomer: async (req, res) => {
     try {
-      const customer = await Customer.findById(req.params.id).populate('data_service');
-      if (!customer) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
-      return res.status(200).json(customer);
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateCustomer: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updateData = { ...req.body };
-
-      if (req.files?.image_front_view) updateData.image_front_view = req.files.image_front_view.map(f => f.path);
-      if (req.files?.image_back_view) updateData.image_back_view = req.files.image_back_view.map(f => f.path);
-
-      const updated = await Customer.findByIdAndUpdate(id, { $set: updateData }, { new: true });
-      if (!updated) return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
-
-      await logAction(req.auth._id, 'Khách hàng', 'Cập nhật', `/trang-chu/khach-hang/cap-nhat-khach-hang/${id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteCustomer: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const customer = await Customer.findById(id);
+      const customer = await Customer.findById(req.params.id).lean();
 
       if (!customer) {
         return res.status(404).json({
@@ -204,31 +175,116 @@ const customerController = {
         });
       }
 
-      const hasLinkedServices = await checkServicesLinked(customer._id);
-      if (hasLinkedServices) {
-        return res.status(400).json({
-          success: false, 
-          message: "Không thể xóa khách hàng khi đang được sử dụng!"
+      return res.status(200).json({
+        success: true,
+        message: "Lấy thông tin khách hàng thành công.",
+        data: customer
+      });
+
+    } catch (err) {
+      console.error('Error getting customer details:', err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy thông tin khách hàng."
+      });
+    }
+  },
+
+  updateCustomer: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = { ...req.body };
+
+      if (req.files?.identityCardFrontImage) {
+        updateData.identityCardFrontImage = req.files.identityCardFrontImage[0].path;
+      }
+      if (req.files?.identityCardBackImage) {
+        updateData.identityCardBackImage = req.files.identityCardBackImage[0].path; 
+      }
+
+      const customer = await Customer.findById(id);
+      if (!customer) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khách hàng!"
         });
       }
 
-      const deleteFiles = async (paths = []) => {
-        if (!Array.isArray(paths)) return;
-        await Promise.all(paths.map(file => fs.remove(path.resolve(file))));
-      };
+      const updated = await Customer.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      );
 
+      await logAction(
+        req.auth._id,
+        'Khách hàng',
+        'Cập nhật',
+        `/khach-hang/${id}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật thành công!",
+        data: updated
+      });
+
+    } catch (err) {
+      console.error('Error updating customer:', err);
+      
+      if (err.name === 'ValidationError') {
+        return res.status(400).json({
+          success: false,
+          message: "Dữ liệu không hợp lệ!",
+          errors: Object.values(err.errors).map(e => e.message)
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ, vui lòng thử lại!"
+      });
+    }
+  },
+
+  deleteCustomer: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const customer = await Customer.findById(id);
+  
+      if (!customer) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khách hàng!"
+        });
+      }
+  
+      const hasLinkedServices = await checkServicesLinked(customer._id);
+      if (hasLinkedServices) {
+        return res.status(400).json({
+          success: false,
+          message: "Không thể xóa khách hàng khi đang được sử dụng!"
+        });
+      }
+  
+      const deleteFiles = async (paths) => {
+        if (!paths) return;
+        const files = Array.isArray(paths) ? paths : [paths];
+        await Promise.all(files.map(file => fs.remove(path.resolve(file))));
+      };
+  
       await Promise.all([
         deleteFiles(customer.identityCardFrontImage),
         deleteFiles(customer.identityCardBackImage),
         Customer.findByIdAndDelete(id),
         logAction(req.auth._id, 'Khách hàng', 'Xóa')
       ]);
-
+  
       return res.status(200).json({
         success: true,
         message: "Xóa thành công!"
       });
-
+  
     } catch (error) {
       console.error('Error deleting customer:', error);
       return res.status(500).json({
@@ -236,7 +292,7 @@ const customerController = {
         message: "Lỗi máy chủ, vui lòng thử lại!"
       });
     }
-  }
+  }  
 };
 
 module.exports = customerController;

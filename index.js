@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
+const path = require("path");
 
 const corsOptions = require("./src/config/corsOptions");
 const config = require("./src/config/env");
@@ -19,7 +20,7 @@ app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
-app.use("/uploads", express.static("uploads"));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const startServer = async () => {
   try {

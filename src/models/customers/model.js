@@ -38,7 +38,7 @@ const customerSchema = new mongoose.Schema({
     trim: true
   },
   taxCode: {
-    type: String,
+    type: Number,
     trim: true
   },
   companyAddress: {
@@ -50,7 +50,7 @@ const customerSchema = new mongoose.Schema({
     trim: true
   },
   representativePhone: {
-    type: String,
+    type: Number,
     trim: true
   },
   vatEmail: {
@@ -78,12 +78,5 @@ const customerSchema = new mongoose.Schema({
 });
 
 customerSchema.index({ fullName: 'text', email: 'text' });
-
-customerSchema.virtual('services', {
-  ref: 'DomainServices',
-  localField: '_id', 
-  foreignField: 'customerId',
-  justOne: false
-});
 
 module.exports = mongoose.model("Customers", customerSchema);

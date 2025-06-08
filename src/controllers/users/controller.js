@@ -164,7 +164,7 @@ const userController = {
         req.auth._id,
         'Tài khoản',
         'Cập nhật',
-        `/tai-khoan/cap-nhat/${id}`
+        `/tai-khoan/${id}`
       );
 
       return res.status(200).json({
@@ -206,7 +206,7 @@ const userController = {
         req.auth._id,
         'Tài khoản',
         'Cập nhật mật khẩu',
-        `/tai-khoan/cap-nhat/${id}`
+        `/tai-khoan/${id}`
       );
 
       return res.status(200).json({

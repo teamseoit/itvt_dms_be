@@ -10,7 +10,7 @@ const serviceController = {
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
 
-      const [suppliers, total] = await Promise.all([
+      const [serviceSuppliers, total] = await Promise.all([
         ServiceSupplier.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
         ServiceSupplier.countDocuments(),
       ]);
@@ -18,7 +18,7 @@ const serviceController = {
       return res.status(200).json({
         success: true,
         message: "Lấy danh sách nhà cung cấp dịch vụ thành công.",
-        data: suppliers,
+        data: serviceSuppliers,
         meta: {
           page,
           limit,
@@ -80,15 +80,15 @@ const serviceController = {
         }
       }
 
-      const newSupplier = new ServiceSupplier(req.body);
-      const savedSupplier = await newSupplier.save();
+      const newServiceSupplier = new ServiceSupplier(req.body);
+      const savedServiceSupplier = await newServiceSupplier.save();
 
       await logAction(req.auth._id, "Nhà cung cấp dịch vụ", "Thêm mới");
 
       return res.status(201).json({
         success: true,
         message: "Thêm nhà cung cấp dịch vụ thành công!",
-        data: savedSupplier
+        data: savedServiceSupplier
       });
 
     } catch (error) {
@@ -108,9 +108,9 @@ const serviceController = {
         return res.status(400).json({ success: false, message: "ID không hợp lệ!" });
       }
   
-      const supplier = await ServiceSupplier.findById(id);
+      const serviceSupplier = await ServiceSupplier.findById(id);
   
-      if (!supplier) {
+      if (!serviceSupplier) {
         return res.status(404).json({
           success: false,
           message: "Nhà cung cấp không tồn tại!",
@@ -120,7 +120,7 @@ const serviceController = {
       return res.status(200).json({
         success: true,
         message: "Lấy chi tiết nhà cung cấp thành công.",
-        data: supplier,
+        data: serviceSupplier,
       });
     } catch (err) {
       console.error("Lỗi getDetailService:", err);
@@ -133,21 +133,22 @@ const serviceController = {
 
   updateService: async (req, res) => {
     try {
-      const supplier = await ServiceSupplier.findById(req.params.id);
-      if (!supplier) {
+      const { id } = req.params;
+      const { name, company, supportName, address } = req.body;
+  
+      const serviceSupplier = await ServiceSupplier.findById(id);
+      if (!serviceSupplier) {
         return res.status(404).json({ success: false, message: "Nhà cung cấp không tồn tại!" });
       }
 
-      const { name, company, supportName, address } = req.body;
-
-      if (name && name !== supplier.name) {
+      if (name && name !== serviceSupplier.name) {
         const existName = await ServiceSupplier.findOne({ name });
         if (existName) {
           return res.status(400).json({ success: false, message: "Tên nhà cung cấp đã tồn tại!" });
         }
       }
 
-      if (company && company !== supplier.company) {
+      if (company && company !== serviceSupplier.company) {
         const existCompany = await ServiceSupplier.findOne({ company });
         if (existCompany) {
           return res.status(400).json({ success: false, message: "Tên công ty đã tồn tại!" });
@@ -155,26 +156,34 @@ const serviceController = {
       }
 
       const specialCharRegex = /[!@#$%^&*()_+={}[\]:;"'<>,.?/|\\]/;
-      if ([name, company, supportName, address].some(v => specialCharRegex.test(v))) {
+      const fieldsToCheck = [name, company, supportName, address];
+      const hasSpecialChars = fieldsToCheck.some(field => field && specialCharRegex.test(field));
+      if (hasSpecialChars) {
         return res.status(400).json({ success: false, message: "Thông tin không được chứa ký tự đặc biệt!" });
       }
-
-      await supplier.updateOne({ $set: req.body });
-      await logAction(req.auth._id, "Nhà cung cấp", "Cập nhật", `/ncc/dich-vu/${req.params.id}`);
-
-      return res.status(200).json({ success: true, message: "Cập nhật nhà cung cấp thành công!" });
+  
+      await serviceSupplier.updateOne({ $set: req.body });
+      const updatedServiceSupplier = await ServiceSupplier.findById(id);
+  
+      await logAction(req.auth._id, "Nhà cung cấp dịch vụ", "Cập nhật", `/ncc/dich-vu/${id}`);
+  
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật nhà cung cấp thành công!",
+        data: updatedServiceSupplier,
+      });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, message: err.message });
     }
-  },
+  },  
 
   deleteService: async (req, res) => {
     try {
-      const supplierId = req.params.id;
+      const serviceSupplierId = req.params.id;
 
-      await ServiceSupplier.findByIdAndDelete(supplierId);
-      await logAction(req.auth._id, "Nhà cung cấp", "Xóa");
+      await ServiceSupplier.findByIdAndDelete(serviceSupplierId);
+      await logAction(req.auth._id, "Nhà cung cấp dịch vụ", "Xóa");
 
       return res.status(200).json({
         success: true,

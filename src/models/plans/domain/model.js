@@ -1,27 +1,31 @@
 const mongoose = require("mongoose");
 
-const domainPlansSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    index: true
+const domainPlanSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    purchasePrice: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    retailPrice: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServiceSuppliers",
+      required: true,
+    },
   },
-  import_price: {
-    type: Number,
-    required: true,
-    index: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    index: true
-  },
-  supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers",
-    required: true
-  }
-}, {timestamps: true});
+  { timestamps: true }
+);
 
-let DomainPlans = mongoose.model("DomainPlans", domainPlansSchema);
-module.exports = DomainPlans;
+const DomainPlan = mongoose.model("DomainPlans", domainPlanSchema);
+
+module.exports = DomainPlan;

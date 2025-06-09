@@ -1,82 +1,184 @@
-const DomainPlans = require("../../../models/plans/domain/model");
+const DomainPlan = require("../../../models/plans/domain/model");
 const logAction = require("../../../middleware/actionLogs");
 
 const domainPlansController = {
-  addDomainPlans: async(req, res) => {
+  getDomainPlans: async (req, res) => {
     try {
-      const {name} = req.body;
-      const existingName = await DomainPlans.findOne({name});
-      if (existingName) {
-        let errorMessage = '';
-        if (existingName.name === name) {
-          errorMessage = 'Tên miền đã tồn tại! Vui lòng nhập tên khác!';
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const [domainPlans, totalDocs] = await Promise.all([
+        DomainPlan.find()
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("supplier", "name company"),
+        DomainPlan.countDocuments()
+      ]);
+
+      const totalPages = Math.ceil(totalDocs / limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách gói tên miền thành công.",
+        data: domainPlans,
+        meta: {
+          page,
+          limit,
+          totalDocs,
+          totalPages
         }
-        return res.status(400).json({message: errorMessage});
-      }
-      const newDomainPlans = new DomainPlans(req.body);
-      const saveDomainPlans = await newDomainPlans.save();
-      await logAction(req.auth._id, 'Gói DV Tên miền', 'Thêm mới');
-      return res.status(200).json(saveDomainPlans);
-    } catch(err) {
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy danh sách gói tên miền.",
+        error: err.message
+      });
     }
   },
 
-  getDomainPlans: async(req, res) => {
+  addDomainPlan: async (req, res) => {
     try {
-      const domainPlans = await DomainPlans.find().sort({"createdAt": -1}).populate('supplier_id', 'name company');
-      return res.status(200).json(domainPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getDetailDomainPlans: async(req, res) => {
-    try {
-      const domainPlans = await DomainPlans.findById(req.params.id).populate('supplier_id', 'name company phone address');
-      return res.status(200).json(domainPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteDomainPlans: async(req, res) => {
-    try {
-      await DomainPlans.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Gói DV Tên miền', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateDomainPlans: async(req, res) => {
-    try {
-      const domainPlans = await DomainPlans.findById(req.params.id);
-      if (!domainPlans) {
-        return res.status(404).json({ message: "Tên miền không tồn tại!" });
-      }
-
       const { name } = req.body;
-      if (name && name !== domainPlans.name) {
-        const existingDomainPlanName = await DomainPlans.findOne({ name });
-        if (existingDomainPlanName) {
-          return res.status(400).json({ message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!" });
+      const existingPlan = await DomainPlan.findOne({ name });
+
+      if (existingPlan) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!"
+        });
+      }
+
+      const newPlan = new DomainPlan(req.body);
+      const savedPlan = await newPlan.save();
+
+      await logAction(req.auth._id, "Gói DV Tên miền", "Thêm mới");
+
+      return res.status(201).json({
+        success: true,
+        message: "Thêm gói tên miền thành công.",
+        data: savedPlan
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi thêm gói tên miền.",
+        error: err.message
+      });
+    }
+  },
+
+  getDetailDomainPlan: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const plan = await DomainPlan.findById(id).populate(
+        "supplier",
+        "name company"
+      );
+
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói tên miền!"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết gói tên miền thành công.",
+        data: plan
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy chi tiết gói tên miền.",
+        error: err.message
+      });
+    }
+  },
+
+  updateDomainPlan: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name } = req.body;
+
+      const plan = await DomainPlan.findById(id);
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Tên miền không tồn tại!"
+        });
+      }
+
+      if (name && name !== plan.name) {
+        const existingPlan = await DomainPlan.findOne({ name });
+        if (existingPlan) {
+          return res.status(400).json({
+            success: false,
+            message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!"
+          });
         }
       }
 
-      await domainPlans.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Gói DV Tên miền', 'Cập nhật', `/trang-chu/goi-dich-vu/cap-nhat-ten-mien/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
+      const updatedPlan = await DomainPlan.findByIdAndUpdate(
+        id,
+        { $set: req.body },
+        { new: true }
+      ).populate("supplier", "name company");
+
+      await logAction(
+        req.auth._id,
+        "Gói DV Tên miền",
+        "Cập nhật", 
+        `/goi-dich-vu/ten-mien/${id}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật gói tên miền thành công.",
+        data: updatedPlan
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi cập nhật gói tên miền.",
+        error: err.message
+      });
+    }
+  },
+
+  deleteDomainPlan: async (req, res) => {
+    try {
+      const deleted = await DomainPlan.findByIdAndDelete(req.params.id);
+
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói tên miền để xóa."
+        });
+      }
+
+      await logAction(req.auth._id, "Gói DV Tên miền", "Xóa");
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa gói tên miền thành công."
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi xóa gói tên miền.",
+        error: err.message
+      });
     }
   }
-}
+};
 
 module.exports = domainPlansController;

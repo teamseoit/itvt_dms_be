@@ -114,6 +114,7 @@ const init = async () => {
             name: "Xóa server",
         },
 
+        
         // hợp đồng
         {
             _id: new ObjectId("667463d04bede188dfb46d7a"),
@@ -125,14 +126,19 @@ const init = async () => {
             name: "Tạo hợp đồng",
         },
         {
-            _id: new ObjectId("667463d04bede188dfb46d7c"),
+            _id: new ObjectId("667463d04bede188dfb4610c"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
             name: "Sửa hợp đồng",
         },
+        // {
+        //     _id: new ObjectId("667463d04bede188dfb46c7c"),
+        //     permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
+        //     name: "Xóa hợp đồng",
+        // },
         {
-            _id: new ObjectId("667463d04bede188dfb46c7c"),
+            _id: new ObjectId("667463d04bede188dfb46d7c"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Xóa hợp đồng",
+            name: "Gia hạn hợp đồng",
         },
 
         // khách hàng
@@ -422,15 +428,36 @@ const init = async () => {
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Xóa dịch vụ website",
         },
+
         //backups
         {
             _id: new ObjectId("666523d04bede188dfb46d75"),
             name: "Sao lưu dữ liệu",
         },
         {
+            _id: new ObjectId("643263d04bede188dfb46d77"),
+            permission_parent_id: new ObjectId("666523d04bede188dfb46d75"),
+            name: "Xem thống kê",
+        },
+        {
             _id: new ObjectId("643263d04bede188dfb46d76"),
             permission_parent_id: new ObjectId("666523d04bede188dfb46d75"),
             name: "Tạo sao lưu dữ liệu",
+        },
+        {
+            _id: new ObjectId("643263d04bede188dfb46d78"),
+            permission_parent_id: new ObjectId("666523d04bede188dfb46d75"),
+            name: "Xem sao lưu dữ liệu",
+        },
+        // {
+        //     _id: new ObjectId("643263d04bede188dfb46d79"),
+        //     permission_parent_id: new ObjectId("666523d04bede188dfb46d75"),
+        //     name: "Xem sao lưu dữ liệu",
+        // },
+        {
+            _id: new ObjectId("643263d04bede188dfb46d79"),
+            permission_parent_id: new ObjectId("666523d04bede188dfb46d75"),
+            name: "Xem lịch sử thao tác",
         },
         // ip white
         {

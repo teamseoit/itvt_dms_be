@@ -1,4 +1,5 @@
 const ServiceSupplier = require("../../../models/suppliers/service/model");
+const DomainPlan = require("../../../models/plans/domain/model");
 const logAction = require("../../../middleware/actionLogs");
 const { ObjectId } = require("mongoose").Types;
 const mongoose = require("mongoose");
@@ -181,6 +182,22 @@ const serviceController = {
   deleteService: async (req, res) => {
     try {
       const serviceSupplierId = req.params.id;
+
+      const domainPlansUsingSupplier = await DomainPlan.find({ supplier: serviceSupplierId });
+      
+      if (domainPlansUsingSupplier.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Không thể xóa nhà cung cấp dịch vụ này vì đang được sử dụng bởi gói dịch vụ tên miền!",
+          data: {
+            domainPlansCount: domainPlansUsingSupplier.length,
+            domainPlans: domainPlansUsingSupplier.map(plan => ({
+              id: plan._id,
+              name: plan.name
+            }))
+          }
+        });
+      }
 
       await ServiceSupplier.findByIdAndDelete(serviceSupplierId);
       await logAction(req.auth._id, "Nhà cung cấp dịch vụ", "Xóa");

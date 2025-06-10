@@ -38,14 +38,14 @@ const init = async () => {
             name: "Tạo tài khoản mới",
         },
         {
-            _id: new ObjectId("66746193cb45907845239f37"),
-            permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
-            name: "Cập nhật mật khẩu",
-        },
-        {
             _id: new ObjectId("66746193cb45907845239f38"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
             name: "Sửa tài khoản",
+        },
+        {
+            _id: new ObjectId("66746193cb45907845239f37"),
+            permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
+            name: "Cập nhật mật khẩu",
         },
         {
             _id: new ObjectId("66746193cb45907845239f50"),
@@ -71,6 +71,32 @@ const init = async () => {
             _id: new ObjectId("66746193cb45907845239f4a"),
             permission_parent_id: new ObjectId("667460e3d19aa9fcecc69fa6"),
             name: "Xóa nhóm quyền",
+        },
+
+        // khách hàng
+        {
+            _id: new ObjectId("667463d04bede188dfb46d7d"),
+            name: "Khách hàng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb46f7f"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
+            name: "Xem khách hàng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb46d7e"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
+            name: "Tạo khách hàng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb46d7f"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
+            name: "Sửa khách hàng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb46b7f"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
+            name: "Xóa khách hàng",
         },
 
         // nhà cung cấp
@@ -167,32 +193,6 @@ const init = async () => {
             _id: new ObjectId("667463d04bede188dfb46d7c"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
             name: "Gia hạn hợp đồng",
-        },
-
-        // khách hàng
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7d"),
-            name: "Khách hàng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188dfb46f7f"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
-            name: "Xem khách hàng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7e"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
-            name: "Tạo khách hàng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7f"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
-            name: "Sửa khách hàng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188dfb46b7f"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
-            name: "Xóa khách hàng",
         },
 
         //gói dịch vụ

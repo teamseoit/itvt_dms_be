@@ -22,142 +22,158 @@ const init = async () => {
   const count = await Roles.estimatedDocumentCount();
   if (count == 0) {
     const array = [
-      // tao tai khoảnm 
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c919"),
-        permission_id: new ObjectId("66746193cb45907845239f36"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // sưa tai khoan
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c91b"),
-        permission_id: new ObjectId("66746193cb45907845239f37"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // sửa tài khoản
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c91d"),
-        permission_id: new ObjectId("66746193cb45907845239f38"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //xóa tài khoản
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c91f"),
-        permission_id: new ObjectId("66746193cb45907845239f50"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo nhóm quyền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c921"),
-        permission_id: new ObjectId("66746193cb45907845239f39"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //sửa nhóm quyền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c923"),
-        permission_id: new ObjectId("66746193cb45907845239f3a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //xóa nhóm quyền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c925"),
-        permission_id: new ObjectId("66746193cb45907845239f4a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //tạo nhà cung cấp
+      // tài khoản
+        // xem tài khoản
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c920"),
+          permission_id: new ObjectId("66746193cb45907845ee9f36"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo tài khoản
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c919"),
+          permission_id: new ObjectId("66746193cb45907845239f36"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa tài khoản
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c91d"),
+          permission_id: new ObjectId("66746193cb45907845239f38"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // cập nhật mật khẩu tài khoản
+        {
+          _id: new ObjectId("66746193cb45905845239f39"),
+          permission_id: new ObjectId("66746193cb45907845239f37"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa tài khoản
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c91f"),
+          permission_id: new ObjectId("66746193cb45907845239f50"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xem nhóm quyền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c921"),
+          permission_id: new ObjectId("66746193cb45907845fe9f39"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo nhóm quyền
+        {
+          _id: new ObjectId("66746193cb45907845fe9f40"),
+          permission_id: new ObjectId("66746193cb45907845239f39"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa nhóm quyền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c923"),
+          permission_id: new ObjectId("66746193cb45907845239f3a"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa nhóm quyền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c925"),
+          permission_id: new ObjectId("66746193cb45907845239f4a"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+
+      // khách hàng
+        // xem khách hàng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41f93d"),
+          permission_id: new ObjectId("667463d04bede188dfb46f7f"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo khách hàng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c939"),
+          permission_id: new ObjectId("667463d04bede188dfb46d7e"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa khách hàng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c93b"),
+          permission_id: new ObjectId("667463d04bede188dfb46d7f"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa khách hàng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c93d"),
+          permission_id: new ObjectId("667463d04bede188dfb46b7f"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+
+      // tạo nhà cung cấp
       {
         _id: new ObjectId("668653c9e55c5173ec41c927"),
         permission_id: new ObjectId("667463d04bede188dfb46d76"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Sửa nhà cung cấp
+      // sửa nhà cung cấp
       {
         _id: new ObjectId("668653c9e55c5173ec41c929"),
         permission_id: new ObjectId("667463d04bede188dfb46d77"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Xóa nhà cung cấp
+      // xóa nhà cung cấp
       {
         _id: new ObjectId("668653c9e55c5173ec41c92b"),
         permission_id: new ObjectId("667463d04bede188dfb46d78"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Xem nhà cung cấp
+      // xem nhà cung cấp
       {
         _id: new ObjectId("667463d04bede188dfbee478"),
         permission_id: new ObjectId("667463d04bede188dfb46e78"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Tạo nhà mạng
+      // tạo nhà mạng
       {
         _id: new ObjectId("668653c9e55c5173ec41c92d"),
         permission_id: new ObjectId("667463d04bede188dfb46d79"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //sửa nhà mạng
+      // sửa nhà mạng
       {
         _id: new ObjectId("668653c9e55c5173ec41c92f"),
         permission_id: new ObjectId("667463d04bede188dfb46d80"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //xóa nhà mạng
+      // xóa nhà mạng
       {
         _id: new ObjectId("668653c9e55c5173ec41c931"),
         permission_id: new ObjectId("667463d04bede188dfb46d81"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Xem nhà mạng
+      // Xem nhà mạng
       {
         _id: new ObjectId("667463d04bede188dfb22e81"),
         permission_id: new ObjectId("667463d04bede188deb46e81"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Tạo server
+      // tạo server
       {
         _id: new ObjectId("668653c9e55c5173ec41c933"),
         permission_id: new ObjectId("667463d04bede188dfb46a81"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Sửa server
+      // sửa server
       {
         _id: new ObjectId("668653c9e55c5173ec41c935"),
         permission_id: new ObjectId("667463d04bede188dfb46e81"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //xóa sever
+      // xóa sever
       {
         _id: new ObjectId("668653c9e55c5173ec41c937"),
         permission_id: new ObjectId("667463d04bede188dfb46f81"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Xem server
+      // xem server
       {
         _id: new ObjectId("668653c9e55c5173ec41f937"),
         permission_id: new ObjectId("667463d04bede188dfb46b81"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo khách hàng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c939"),
-        permission_id: new ObjectId("667463d04bede188dfb46d7e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //sửa khách hàng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c93b"),
-        permission_id: new ObjectId("667463d04bede188dfb46d7f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //xóa khách hàng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c93d"),
-        permission_id: new ObjectId("667463d04bede188dfb46b7f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //xem khách hàng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41f93d"),
-        permission_id: new ObjectId("667463d04bede188dfb46f7f"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //tạo hợp đồng

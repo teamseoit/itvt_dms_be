@@ -179,13 +179,6 @@ const init = async () => {
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
 
-      //xóa hợp đồng( đã bị comment bên permissions->model.js)
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41c943"),
-      //   permission_id: new ObjectId("667463d04bede188dfb46c7c"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
-
       //dịch vụ ITVT
       //tạo dịch vụ tên miền ITVT
       {
@@ -196,91 +189,91 @@ const init = async () => {
       //sửa dịch vụ tên miền ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c942"),
-        permission_id: new ObjectId("66746678f7f723b779f9e31"),
+        permission_id: new ObjectId("66746678f7f723b779a9e311"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xóa dịch vụ tên miền ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c943"),
-        permission_id: new ObjectId("66746678f7f723b779k9e32"),
+        permission_id: new ObjectId("66746678f7f723b779a9e321"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xem dịch vụ tên miền ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c944"),
-        permission_id: new ObjectId("66746678f7f723b779k9e33"),
+        permission_id: new ObjectId("66746678f7f723b779a9e331"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //tạo dịch vụ hosting ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c945"),
-        permission_id: new ObjectId("66746678f7f723b779k9e49"),
+        permission_id: new ObjectId("66746678f7f723b779a9e491"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //sửa dịch vụ hosting ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c946"),
-        permission_id: new ObjectId("66746678f7f723b779k9e41"),
+        permission_id: new ObjectId("66746678f7f723b779a9e411"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xóa dịch vụ hosting ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c947"),
-        permission_id: new ObjectId("66746678f7f723b779k9e42"),
+        permission_id: new ObjectId("66746678f7f723b779a9e421"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xem dịch vụ hosting ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c948"),
-        permission_id: new ObjectId("66746678f7f723b779k9e43"),
+        permission_id: new ObjectId("66746678f7f723b779a9e431"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //tạo dịch vụ email ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c951"),
-        permission_id: new ObjectId("66746678f7f723b779k9e59"),
+        permission_id: new ObjectId("66746678f7f723b779a9e591"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //sửa dịch vụ email ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c952"),
-        permission_id: new ObjectId("66746678f7f723b779k9e51"),
+        permission_id: new ObjectId("66746678f7f723b779a9e511"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xóa dịch vụ email ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c953"),
-        permission_id: new ObjectId("66746678f7f723b779k9e52"),
+        permission_id: new ObjectId("66746678f7f723b779a9e521"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xem dịch vụ email ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c954"),
-        permission_id: new ObjectId("66746678f7f723b779k9e53"),
+        permission_id: new ObjectId("66746678f7f723b779a9e531"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //tạo dịch vụ ssl ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c961"),
-        permission_id: new ObjectId("66746678f7f723b779k9e69"),
+        permission_id: new ObjectId("66746678f7f723b779a9e691"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //sửa dịch vụ ssl ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c962"),
-        permission_id: new ObjectId("66746678f7f723b779k9e61"),
+        permission_id: new ObjectId("66746678f7f723b779a9e611"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xóa dịch vụ ssl ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c963"),
-        permission_id: new ObjectId("66746678f7f723b779k9e62"),
+        permission_id: new ObjectId("66746678f7f723b779a9e621"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //xem dịch vụ ssl ITVT
       {
         _id: new ObjectId("668653c9e55c5173ec51c964"),
-        permission_id: new ObjectId("66746678f7f723b779k9e63"),
+        permission_id: new ObjectId("66746678f7f723b779a9e631"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
 
@@ -322,14 +315,14 @@ const init = async () => {
       },
       // Xem gói tên miền
       {
-        _id: new ObjectId("668653c9e55c5173ec41k94f"),
-        permission_id: new ObjectId("66746678f7f723b779b1k061"),
+        _id: new ObjectId("668653c9e55c5173ec41a94f"),
+        permission_id: new ObjectId("66746678f7f723b779b1a061"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem dịch vụ tên miền
       {
-        _id: new ObjectId("668653c9e55c5173ec41v94f"),
-        permission_id: new ObjectId("667467eb263fb998b9925k30"),
+        _id: new ObjectId("668653c9e55c5173ec41e94f"),
+        permission_id: new ObjectId("667467eb263fb998b9925a30"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ hosting
@@ -370,20 +363,20 @@ const init = async () => {
       },
       //Xem gói hosting
       {
-        _id: new ObjectId("668653c9e55c5173ec41k95b"),
-        permission_id: new ObjectId("66746678f7f723b779b1k065"),
+        _id: new ObjectId("668653c9e55c5173ec41a95b"),
+        permission_id: new ObjectId("66746678f7f723b779b1a065"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem dịch vụ hosting
       {
-        _id: new ObjectId("668653c9e55c5173ec41k96b"),
-        permission_id: new ObjectId("667467eb263fb998b9925k33"),
+        _id: new ObjectId("668653c9e55c5173ec41a96b"),
+        permission_id: new ObjectId("667467eb263fb998b9925a33"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo gói email
       {
-        _id: new ObjectId("668653c9e55c5173ec41k95d"),
-        permission_id: new ObjectId("66746678f7f723b779b1k064"),
+        _id: new ObjectId("668653c9e55c5173ec41a95d"),
+        permission_id: new ObjectId("66746678f7f723b779b1a065"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ email
@@ -418,14 +411,14 @@ const init = async () => {
       },
       //Xem gói email
       {
-        _id: new ObjectId("668653c9e55c5173ec41k965"),
-        permission_id: new ObjectId("66746678f7f723b779b1k067"),
+        _id: new ObjectId("668653c9e55c5173ec41a965"),
+        permission_id: new ObjectId("66746678f7f723b779b1a067"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem dịch vụ email
       {
-        _id: new ObjectId("668653c9e55c5173ec41k966"),
-        permission_id: new ObjectId("667467eb263fb998b9925k36"),
+        _id: new ObjectId("668653c9e55c5173ec41a966"),
+        permission_id: new ObjectId("667467eb263fb998b9925a36"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ ssl
@@ -460,14 +453,14 @@ const init = async () => {
       },
       //Xem gói ssl
       {
-        _id: new ObjectId("668653c9e55c5173ec41k973"),
-        permission_id: new ObjectId("66746678f7f723b779b1k06a"),
+        _id: new ObjectId("668653c9e55c5173ec41a973"),
+        permission_id: new ObjectId("66746678f7f723b779b1a06a"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem dịch vụ ssl
       {
-        _id: new ObjectId("668653c9e55c5173ec41k986"),
-        permission_id: new ObjectId("667467eb263fb998b9925k39"),
+        _id: new ObjectId("668653c9e55c5173ec41a986"),
+        permission_id: new ObjectId("667467eb263fb998b9925a39"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo gói viết bài content & PR
@@ -491,14 +484,14 @@ const init = async () => {
       },
       // Xem gói viết bài content & PR
       {
-        _id: new ObjectId("668653c9e55c5173ec41k976"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06k"),
+        _id: new ObjectId("668653c9e55c5173ec41a976"),
+        permission_id: new ObjectId("66746678f7f723b779b1a06e"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem dịch vụ viết bài content & PR
       {
-        _id: new ObjectId("668653c9e55c5173ec41k996"),
-        permission_id: new ObjectId("667467eb263fb998b9925k3c"),
+        _id: new ObjectId("668653c9e55c5173ec41a996"),
+        permission_id: new ObjectId("667467eb263fb998b9925a3a"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo tài khoản mới
@@ -527,8 +520,8 @@ const init = async () => {
       },
       //Xem gói bảo trì
       {
-        _id: new ObjectId("668653c9e55c5173ec41k97d"),
-        permission_id: new ObjectId("66746678f7f723b779b1k070"),
+        _id: new ObjectId("668653c9e55c5173ec41a97d"),
+        permission_id: new ObjectId("66746678f7f723b779b1a070"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo gói sim 4G
@@ -551,8 +544,8 @@ const init = async () => {
       },
       //Xem gói sim 4G
       {
-        _id: new ObjectId("668653c9e55c5173ec41k983"),
-        permission_id: new ObjectId("66746678f7f723b779b1k073"),
+        _id: new ObjectId("668653c9e55c5173ec41a983"),
+        permission_id: new ObjectId("66746678f7f723b779b1a073"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo server
@@ -575,31 +568,31 @@ const init = async () => {
       },
       //Xem server
       {
-        _id: new ObjectId("668653c9e55c5173ec41k989"),
-        permission_id: new ObjectId("66746678f7f723b779b1k075"),
+        _id: new ObjectId("668653c9e55c5173ec41a989"),
+        permission_id: new ObjectId("66746678f7f723b779b1a075"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo gói toplist
       {
-        _id: new ObjectId("668653c9e55c5173ae41k982"),
+        _id: new ObjectId("668653c9e55c5173ae41a982"),
         permission_id: new ObjectId("66746678f7f500b779b1e081"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Sửa gói toplist
       {
-        _id: new ObjectId("668653c9e55c5173ae41k983"),
+        _id: new ObjectId("668653c9e55c5173ae41a983"),
         permission_id: new ObjectId("66746678f7f500b779b1e082"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xóa gói toplist
       {
-        _id: new ObjectId("668653c9e55c5173ae41k984"),
+        _id: new ObjectId("668653c9e55c5173ae41a984"),
         permission_id: new ObjectId("66746678f7f500b779b1e083"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Xem gói toplist
       {
-        _id: new ObjectId("668653c9e55c5173ae41k985"),
+        _id: new ObjectId("668653c9e55c5173ae41a985"),
         permission_id: new ObjectId("66746678f7f500b779b1e084"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
@@ -647,8 +640,8 @@ const init = async () => {
       },
       //Xem dịch vụ bảo trì
       {
-        _id: new ObjectId("668653c9e55c5173ec41k997"),
-        permission_id: new ObjectId("667467eb263fb998b9925k3f"),
+        _id: new ObjectId("668653c9e55c5173ec41a997"),
+        permission_id: new ObjectId("667467eb263fb998b9925a3f"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ sim 4G
@@ -671,8 +664,8 @@ const init = async () => {
       },
       // Xem dịch vụ sim 4G
       {
-        _id: new ObjectId("668653c9e55c5173ec41k99d"),
-        permission_id: new ObjectId("667467eb263fb998b9925k42"),
+        _id: new ObjectId("668653c9e55c5173ec41a99d"),
+        permission_id: new ObjectId("667467eb263fb998b9925a42"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ toplist
@@ -695,8 +688,8 @@ const init = async () => {
       },
       //Xem dịch vụ toplist
       {
-        _id: new ObjectId("668653c9e55c5173ec41k9a3"),
-        permission_id: new ObjectId("667467eb263fb998b9925k45"),
+        _id: new ObjectId("668653c9e55c5173ec41a9a3"),
+        permission_id: new ObjectId("667467eb263fb998b9925a45"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
       //Tạo dịch vụ website
@@ -719,8 +712,8 @@ const init = async () => {
       },
       //Xem dịch vụ website
       {
-        _id: new ObjectId("668653c9e55c5173ec41k9a9"),
-        permission_id: new ObjectId("667467eb263fb998b9925k48"),
+        _id: new ObjectId("668653c9e55c5173ec41a9a9"),
+        permission_id: new ObjectId("667467eb263fb998b9925a48"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
 

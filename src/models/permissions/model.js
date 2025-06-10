@@ -79,7 +79,7 @@ const init = async () => {
             name: "Nhà cung cấp",
         },
         {
-            _id: new ObjectId("667463d04bede188dfb46k78"),
+            _id: new ObjectId("667463d04bede188dfb46e78"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d75"),
             name: "Xem nhà cung cấp dịch vụ",
         },
@@ -99,7 +99,7 @@ const init = async () => {
             name: "Xóa nhà cung cấp dịch vụ",
         },
         {
-            _id: new ObjectId("667463d04bede188dfb46k81"),
+            _id: new ObjectId("667463d04bede188deb46e81"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d75"),
             name: "Xem nhà cung cấp mạng",
         },
@@ -119,7 +119,7 @@ const init = async () => {
             name: "Xóa nhà cung cấp mạng",
         },
         {
-            _id: new ObjectId("667463d04bede188dfb46u81"),
+            _id: new ObjectId("667463d04bede188dfb46b81"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d75"),
             name: "Xem nhà cung cấp server",
         },
@@ -175,7 +175,7 @@ const init = async () => {
             name: "Khách hàng",
         },
         {
-            _id: new ObjectId("667463d04bede188dfb46k7f"),
+            _id: new ObjectId("667463d04bede188dfb46f7f"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7d"),
             name: "Xem khách hàng",
         },
@@ -392,12 +392,12 @@ const init = async () => {
             name: "Xem dịch vụ tên miền",
         },
         {
-            _id: new ObjectId("66746678f7f723b779k9e39"),
+            _id: new ObjectId("6684196550a36692df218d8d"),
             permission_parent_id: new ObjectId("667464b5500bf3ek04c24k47"),
             name: "Tạo dịch vụ tên miền",
         },
          {
-            _id: new ObjectId("66746678f7f723b779k9e31"),
+            _id: new ObjectId("66746678f7f723b779f9e31"),
             permission_parent_id: new ObjectId("667464b5500bf3ek04c24k47"),
             name: "Sửa dịch vụ tên miền",
         },

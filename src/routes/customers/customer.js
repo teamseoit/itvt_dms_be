@@ -8,14 +8,15 @@ const imageUploadConfig = [
   { name: 'identityCardBackImage', maxCount: 1 }
 ];
 
+router.get("/", check_role("667463d04bede188dfb46k7f"), customerController.getCustomer);
+
 router.post('/', 
   check_role("667463d04bede188dfb46d7e"),
   upload.fields(imageUploadConfig), 
   customerController.addCustomer
 );
 
-router.get("/", customerController.getCustomer);
-router.get("/:id", customerController.getDetailCustomer);
+router.get("/:id", check_role("667463d04bede188dfb46d7f"), customerController.getDetailCustomer);
 
 router.put('/:id',
   check_role("667463d04bede188dfb46d7f"),

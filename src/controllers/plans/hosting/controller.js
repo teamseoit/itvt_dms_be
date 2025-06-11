@@ -2,81 +2,180 @@ const HostingPlans = require("../../../models/plans/hosting/model");
 const logAction = require("../../../middleware/actionLogs");
 
 const hostingPlansController = {
-  addHostingPlans: async(req, res) => {
+  getHostingPlans: async (req, res) => {
     try {
-      const {name} = req.body;
-      const existingName = await HostingPlans.findOne({name});
-      if (existingName) {
-        let errorMessage = '';
-        if (existingName.name === name) {
-          errorMessage = 'Tên gói hosting đã tồn tại! Vui lòng nhập tên khác!';
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const [plans, totalDocs] = await Promise.all([
+        HostingPlans.find()
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("supplier", "name company"),
+        HostingPlans.countDocuments()
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách gói hosting thành công!",
+        data: plans,
+        meta: {
+          page,
+          limit,
+          totalDocs,
+          totalPages: Math.ceil(totalDocs / limit)
         }
-        return res.status(400).json({message: errorMessage});
-      }
-      const newHostingPlans = new HostingPlans(req.body);
-      const saveHostingPlans = await newHostingPlans.save();
-      await logAction(req.auth._id, 'Gói DV Hosting', 'Thêm mới');
-      return res.status(200).json(saveHostingPlans);
-    } catch(err) {
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy danh sách gói hosting.",
+        error: err.message
+      });
     }
   },
 
-  getHostingPlans: async(req, res) => {
+  addHostingPlans: async (req, res) => {
     try {
-      const hostingPlans = await HostingPlans.find().sort({"createdAt": -1}).populate('supplier_id', 'name company');
-      return res.status(200).json(hostingPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getDetailHostingPlans: async(req, res) => {
-    try {
-      const hostingPlans = await HostingPlans.findById(req.params.id).populate('supplier_id', 'name company phone address');
-      return res.status(200).json(hostingPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteHostingPlans: async(req, res) => {
-    try {
-      await HostingPlans.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Gói DV Hosting', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateHostingPlans: async(req, res) => {
-    try {
-      const hostingPlans = await HostingPlans.findById(req.params.id);
-      if (!hostingPlans) {
-        return res.status(404).json({ message: "Tên gói hosting không tồn tại!" });
-      }
-
       const { name } = req.body;
-      if (name && name !== hostingPlans.name) {
-        const existingHostingPlanName = await HostingPlans.findOne({ name });
-        if (existingHostingPlanName) {
-          return res.status(400).json({ message: "Tên gói hosting đã tồn tại! Vui lòng nhập tên khác!" });
+
+      const existingPlan = await HostingPlans.findOne({ name });
+      if (existingPlan) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên gói hosting đã tồn tại! Vui lòng nhập tên khác!"
+        });
+      }
+
+      const newPlan = new HostingPlans(req.body);
+      const savedPlan = await newPlan.save();
+
+      await logAction(req.auth._id, "Gói DV Hosting", "Thêm mới");
+
+      return res.status(201).json({
+        success: true,
+        message: "Tạo gói hosting thành công!",
+        data: savedPlan
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi tạo gói hosting.",
+        error: err.message
+      });
+    }
+  },
+
+  getDetailHostingPlans: async (req, res) => {
+    try {
+      const plan = await HostingPlans.findById(req.params.id).populate(
+        "supplier",
+        "name company"
+      );
+
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói hosting!"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy thông tin gói hosting thành công!",
+        data: plan
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy chi tiết gói hosting.",
+        error: err.message
+      });
+    }
+  },
+
+  updateHostingPlans: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name } = req.body;
+
+      const plan = await HostingPlans.findById(id);
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Gói hosting không tồn tại!"
+        });
+      }
+
+      if (name && name !== plan.name) {
+        const duplicateName = await HostingPlans.findOne({ name });
+        if (duplicateName && duplicateName._id.toString() !== id) {
+          return res.status(400).json({
+            success: false,
+            message: "Tên gói hosting đã tồn tại! Vui lòng nhập tên khác!"
+          });
         }
       }
 
-      await hostingPlans.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Gói DV Hosting', 'Cập nhật', `/trang-chu/goi-dich-vu/cap-nhat-hosting/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
+      const updatedPlan = await HostingPlans.findByIdAndUpdate(
+        id,
+        { $set: req.body },
+        { new: true }
+      ).populate("supplier", "name company");
+
+      await logAction(
+        req.auth._id,
+        "Gói DV Hosting",
+        "Cập nhật",
+        `/goi-dich-vu/hosting/${id}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật gói hosting thành công!",
+        data: updatedPlan
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi cập nhật gói hosting.",
+        error: err.message
+      });
     }
-  }
-}
+  },
+
+  deleteHostingPlans: async (req, res) => {
+    try {
+      const deleted = await HostingPlans.findByIdAndDelete(req.params.id);
+
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói hosting để xóa."
+        });
+      }
+
+      await logAction(req.auth._id, "Gói DV Hosting", "Xóa");
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa gói hosting thành công!"
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi xóa gói hosting.",
+        error: err.message
+      });
+    }
+  },
+};
 
 module.exports = hostingPlansController;

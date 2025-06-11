@@ -297,79 +297,55 @@ const init = async () => {
       },
 
       // gói dịch vụ
-        // Xem gói tên miền
+        // xem gói tên miền
         {
           _id: new ObjectId("668653c9e55c5173ec41a94f"),
           permission_id: new ObjectId("66746678f7f723b779b1a061"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        //tạo gói tên miền
+        // tạo gói tên miền
         {
           _id: new ObjectId("668653c9e55c5173ec41c945"),
           permission_id: new ObjectId("66746678f7f723b779b1b05f"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        //Sửa gói tên miền
+        // sửa gói tên miền
         {
           _id: new ObjectId("668653c9e55c5173ec41c94b"),
           permission_id: new ObjectId("66746678f7f723b779b1b060"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        //Xóa gói tên miền
+        // xóa gói tên miền
         {
           _id: new ObjectId("668653c9e55c5173ec41c94d"),
           permission_id: new ObjectId("66746678f7f723b779b1b061"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem gói hosting
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a95b"),
+          permission_id: new ObjectId("66746678f7f723b779b1a065"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói hosting
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c953"),
+          permission_id: new ObjectId("66746678f7f723b779b1b062"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói hosting
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c955"),
+          permission_id: new ObjectId("66746678f7f723b779b1b063"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói hosting
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c95b"),
+          permission_id: new ObjectId("66746678f7f723b779b1b064"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      //Tạo dịch vụ hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c951"),
-        permission_id: new ObjectId("667467eb263fb998b9925d31"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo gói hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c953"),
-        permission_id: new ObjectId("66746678f7f723b779b1b062"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c955"),
-        permission_id: new ObjectId("66746678f7f723b779b1b063"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c957"),
-        permission_id: new ObjectId("667467eb263fb998b9925d32"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c959"),
-        permission_id: new ObjectId("667467eb263fb998b9925d33"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //xóa gói hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c95b"),
-        permission_id: new ObjectId("66746678f7f723b779b1b064"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a95b"),
-        permission_id: new ObjectId("66746678f7f723b779b1a065"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ hosting
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a96b"),
-        permission_id: new ObjectId("667467eb263fb998b9925a33"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       //Tạo gói email
       {
         _id: new ObjectId("668653c9e55c5173ec41a95d"),

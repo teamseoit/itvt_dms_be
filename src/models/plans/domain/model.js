@@ -7,6 +7,10 @@ const domainPlanSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    extension: {
+      type: String,
+      required: true, // ví dụ: ".com", ".vn"
+    },
     purchasePrice: {
       type: Number,
       required: true,
@@ -17,10 +21,22 @@ const domainPlanSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    renewalPrice: {
+      type: Number,
+      required: true, // giá gia hạn mỗi năm
+    },
+    registrationYears: {
+      type: Number,
+      default: 1, // số năm đăng ký mặc định
+    },
     supplier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceSuppliers",
       required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true, // bật/tắt hiển thị gói tên miền
     },
   },
   { timestamps: true }

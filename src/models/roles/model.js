@@ -296,54 +296,32 @@ const init = async () => {
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
 
-      //tạo gói tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c945"),
-        permission_id: new ObjectId("66746678f7f723b779b1b05f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c947"),
-        permission_id: new ObjectId("667467eb263fb998b9925d2e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c949"),
-        permission_id: new ObjectId("667467eb263fb998b9925d2f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c94b"),
-        permission_id: new ObjectId("66746678f7f723b779b1b060"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c94d"),
-        permission_id: new ObjectId("66746678f7f723b779b1b061"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c94f"),
-        permission_id: new ObjectId("667467eb263fb998b9925d30"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // Xem gói tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a94f"),
-        permission_id: new ObjectId("66746678f7f723b779b1a061"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41e94f"),
-        permission_id: new ObjectId("667467eb263fb998b9925a30"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+      // gói dịch vụ
+        // Xem gói tên miền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a94f"),
+          permission_id: new ObjectId("66746678f7f723b779b1a061"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        //tạo gói tên miền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c945"),
+          permission_id: new ObjectId("66746678f7f723b779b1b05f"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        //Sửa gói tên miền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c94b"),
+          permission_id: new ObjectId("66746678f7f723b779b1b060"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        //Xóa gói tên miền
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c94d"),
+          permission_id: new ObjectId("66746678f7f723b779b1b061"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+      
       //Tạo dịch vụ hosting
       {
         _id: new ObjectId("668653c9e55c5173ec41c951"),

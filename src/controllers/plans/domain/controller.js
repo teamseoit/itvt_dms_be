@@ -17,8 +17,6 @@ const domainPlansController = {
         DomainPlan.countDocuments()
       ]);
 
-      const totalPages = Math.ceil(totalDocs / limit);
-
       return res.status(200).json({
         success: true,
         message: "Lấy danh sách gói tên miền thành công.",
@@ -27,7 +25,7 @@ const domainPlansController = {
           page,
           limit,
           totalDocs,
-          totalPages
+          totalPages: Math.ceil(totalDocs / limit)
         }
       });
     } catch (err) {
@@ -42,9 +40,9 @@ const domainPlansController = {
 
   addDomainPlan: async (req, res) => {
     try {
-      const { name } = req.body;
-      const existingPlan = await DomainPlan.findOne({ name });
+      const { name, extension } = req.body;
 
+      const existingPlan = await DomainPlan.findOne({ name, extension });
       if (existingPlan) {
         return res.status(400).json({
           success: false,
@@ -74,11 +72,7 @@ const domainPlansController = {
 
   getDetailDomainPlan: async (req, res) => {
     try {
-      const { id } = req.params;
-      const plan = await DomainPlan.findById(id).populate(
-        "supplier",
-        "name company"
-      );
+      const plan = await DomainPlan.findById(req.params.id).populate("supplier", "name company");
 
       if (!plan) {
         return res.status(404).json({
@@ -105,7 +99,7 @@ const domainPlansController = {
   updateDomainPlan: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name } = req.body;
+      const { name, extension } = req.body;
 
       const plan = await DomainPlan.findById(id);
       if (!plan) {
@@ -115,9 +109,9 @@ const domainPlansController = {
         });
       }
 
-      if (name && name !== plan.name) {
-        const existingPlan = await DomainPlan.findOne({ name });
-        if (existingPlan) {
+      if ((name && name !== plan.name) || (extension && extension !== plan.extension)) {
+        const exists = await DomainPlan.findOne({ name, extension });
+        if (exists && exists._id.toString() !== id) {
           return res.status(400).json({
             success: false,
             message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!"
@@ -131,12 +125,7 @@ const domainPlansController = {
         { new: true }
       ).populate("supplier", "name company");
 
-      await logAction(
-        req.auth._id,
-        "Gói DV Tên miền",
-        "Cập nhật", 
-        `/goi-dich-vu/ten-mien/${id}`
-      );
+      await logAction(req.auth._id, "Gói DV Tên miền", "Cập nhật", `/goi-dich-vu/ten-mien/${id}`);
 
       return res.status(200).json({
         success: true,

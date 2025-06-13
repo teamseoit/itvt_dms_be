@@ -4,14 +4,44 @@ const serverPlansSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
     index: true
   },
-  supplier_server_id: {
+  cpu: {
+    type: String,
+  },
+  ramInGB: {
+    type: Number,
+  },
+  storageInGB: {
+    type: Number,
+  },
+  bandwidthInTB: {
+    type: Number,
+  },
+  purchasePrice: {
+    type: Number,
+    required: true,
+    index: true
+  },
+  retailPrice: {
+    type: Number,
+    required: true,
+    index: true
+  },
+  durationInMonths: {
+    type: Number,
+    default: 1
+  },
+  description: {
+    type: String,
+    default: ''
+  },
+  supplier: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Servers",
+    ref: "ServerSuppliers",
     required: true
   }
-}, {timestamps: true});
+}, { timestamps: true });
 
-let ServerPlans = mongoose.model("ServerPlans", serverPlansSchema);
-module.exports = ServerPlans;
+module.exports = mongoose.model("ServerPlans", serverPlansSchema);

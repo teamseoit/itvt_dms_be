@@ -466,31 +466,31 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b073"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem server
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a989"),
+          permission_id: new ObjectId("66746678f7f723b779b1a075"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo server
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c985"),
+          permission_id: new ObjectId("66746678f7f723b779b1b074"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa server
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c987"),
+          permission_id: new ObjectId("66746678f7f723b779b1b075"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa server
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c989"),
+          permission_id: new ObjectId("66746678f7f723b779b1b076"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      //Tạo server
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c985"),
-        permission_id: new ObjectId("66746678f7f723b779b1b074"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa server
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c987"),
-        permission_id: new ObjectId("66746678f7f723b779b1b075"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa server
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c989"),
-        permission_id: new ObjectId("66746678f7f723b779b1b076"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem server
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a989"),
-        permission_id: new ObjectId("66746678f7f723b779b1a075"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       //Tạo gói toplist
       {
         _id: new ObjectId("668653c9e55c5173ae41a982"),

@@ -345,55 +345,31 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b064"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem gói email
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a965"),
+          permission_id: new ObjectId("66746678f7f723b779b1a067"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói email
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a95d"),
+          permission_id: new ObjectId("66746678f7f723b779b1b065"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói email
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c963"),
+          permission_id: new ObjectId("66746678f7f723b779b1b066"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói email
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c965"),
+          permission_id: new ObjectId("66746678f7f723b779b1b067"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      //Tạo gói email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a95d"),
-        permission_id: new ObjectId("66746678f7f723b779b1a065"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo dịch vụ email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c95f"),
-        permission_id: new ObjectId("667467eb263fb998b9925d34"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c961"),
-        permission_id: new ObjectId("667467eb263fb998b9925d35"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói emai
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c963"),
-        permission_id: new ObjectId("66746678f7f723b779b1b066"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c965"),
-        permission_id: new ObjectId("66746678f7f723b779b1b067"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c967"),
-        permission_id: new ObjectId("667467eb263fb998b9925d36"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a965"),
-        permission_id: new ObjectId("66746678f7f723b779b1a067"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ email
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a966"),
-        permission_id: new ObjectId("667467eb263fb998b9925a36"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       //Tạo dịch vụ ssl
       {
         _id: new ObjectId("668653c9e55c5173ec41c969"),

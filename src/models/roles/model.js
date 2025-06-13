@@ -393,45 +393,32 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b06a"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem gói viết bài content & PR
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a976"),
+          permission_id: new ObjectId("66746678f7f723b779b1a06e"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói viết bài content & PR
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c971"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06b"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói viết bài content & PR
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c975"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06c"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói viết bài content & PR
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c976"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06d"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-
-      //Tạo gói viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c971"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06b"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       
-      //Sửa gói viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c975"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06c"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c976"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06d"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // Xem gói viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a976"),
-        permission_id: new ObjectId("66746678f7f723b779b1a06e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a996"),
-        permission_id: new ObjectId("667467eb263fb998b9925a3a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo tài khoản mới
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c977"),
-        permission_id: new ObjectId("66746193cb45907845239f36"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       //Tạo gói bảo trì
       {
         _id: new ObjectId("668653c9e55c5173ec41c979"),

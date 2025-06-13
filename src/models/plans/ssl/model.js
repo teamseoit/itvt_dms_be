@@ -1,30 +1,47 @@
 const mongoose = require("mongoose");
 
-const sslPlansSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    index: true
+const sslPlanSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
+    },
+    purchasePrice: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    retailPrice: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    renewalPrice: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServiceSuppliers",
+      required: true,
+      index: true,
+    },
   },
-  import_price: {
-    type: Number,
-    required: true,
-    index: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    index: true
-  },
-  feature: {
-    type: String,
-  },
-  supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers",
-    required: true
-  }
-}, {timestamps: true});
+  { timestamps: true }
+);
 
-let SslPlans = mongoose.model("SslPlans", sslPlansSchema);
-module.exports = SslPlans;
+const SSLPlans = mongoose.model("SSLPlans", sslPlanSchema);
+module.exports = SSLPlans;

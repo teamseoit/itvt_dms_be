@@ -369,49 +369,32 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b067"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem gói ssl
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a973"),
+          permission_id: new ObjectId("66746678f7f723b779b1a06a"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói ssl
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c96b"),
+          permission_id: new ObjectId("66746678f7f723b779b1b068"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói ssl
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c96d"),
+          permission_id: new ObjectId("66746678f7f723b779b1b069"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói ssl
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c973"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06a"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      //Tạo dịch vụ ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c969"),
-        permission_id: new ObjectId("667467eb263fb998b9925d37"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo gói ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c96b"),
-        permission_id: new ObjectId("66746678f7f723b779b1b068"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // sửa gói ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c96d"),
-        permission_id: new ObjectId("66746678f7f723b779b1b069"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c96f"),
-        permission_id: new ObjectId("667467eb263fb998b9925d38"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c973"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a973"),
-        permission_id: new ObjectId("66746678f7f723b779b1a06a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ ssl
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a986"),
-        permission_id: new ObjectId("667467eb263fb998b9925a39"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+
       //Tạo gói viết bài content & PR
       {
         _id: new ObjectId("668653c9e55c5173ec41c971"),

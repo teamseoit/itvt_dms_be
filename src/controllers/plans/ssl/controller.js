@@ -1,81 +1,181 @@
-const SslPlans = require("../../../models/plans/ssl/model");
+const SSLPlans = require("../../../models/plans/ssl/model");
 const logAction = require("../../../middleware/actionLogs");
 
 const sslPlansController = {
-  addSslPlans: async(req, res) => {
+  getSslPlans: async (req, res) => {
     try {
-      const {name} = req.body;
-      const existingName = await SslPlans.findOne({name});
-      if (existingName) {
-        let errorMessage = '';
-        if (existingName.name === name) {
-          errorMessage = 'Tên gói SSL đã tồn tại! Vui lòng nhập tên khác!';
-        }
-        return res.status(400).json({message: errorMessage});
-      }
-      const newSslPlans = new SslPlans(req.body);
-      const saveSslPlans = await newSslPlans.save();
-      await logAction(req.auth._id, 'Gói DV SSL', 'Thêm mới');
-      return res.status(200).json(saveSslPlans);
-    } catch(err) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const [plans, totalDocs] = await Promise.all([
+        SSLPlans.find()
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("supplier", "name company"),
+        SSLPlans.countDocuments(),
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách gói SSL thành công!",
+        data: plans,
+        meta: {
+          page,
+          limit,
+          totalDocs,
+          totalPages: Math.ceil(totalDocs / limit),
+        },
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy danh sách gói SSL.",
+        error: err.message,
+      });
     }
   },
 
-  getSslPlans: async(req, res) => {
+  addSslPlans: async (req, res) => {
     try {
-      const sslPlans = await SslPlans.find().sort({"createdAt": -1}).populate('supplier_id', 'name company');
-      return res.status(200).json(sslPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getDetailSslPlans: async(req, res) => {
-    try {
-      const sslPlans = await SslPlans.findById(req.params.id).populate('supplier_id', 'name company phone address');
-      return res.status(200).json(sslPlans);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteSslPlans: async(req, res) => {
-    try {
-      await SslPlans.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Gói DV SSL', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateSslPlans: async(req, res) => {
-    try {
-      const sslPlans = await SslPlans.findById(req.params.id);
-      if (!sslPlans) {
-        return res.status(404).json({ message: "Tên gói SSL không tồn tại!" });
-      }
-
       const { name } = req.body;
-      if (name && name !== sslPlans.name) {
-        const existingSslPlanName = await SslPlans.findOne({ name });
-        if (existingSslPlanName) {
-          return res.status(400).json({ message: "Tên gói SSL đã tồn tại! Vui lòng nhập tên khác!" });
+      const existingPlan = await SSLPlans.findOne({ name });
+
+      if (existingPlan) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên gói SSL đã tồn tại! Vui lòng nhập tên khác!",
+        });
+      }
+
+      const newPlan = new SSLPlans(req.body);
+      const savedPlan = await newPlan.save();
+
+      await logAction(req.auth._id, "Gói DV SSL", "Thêm mới");
+
+      return res.status(201).json({
+        success: true,
+        message: "Tạo gói SSL thành công!",
+        data: savedPlan,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi tạo gói SSL.",
+        error: err.message,
+      });
+    }
+  },
+
+  getDetailSslPlans: async (req, res) => {
+    try {
+      const plan = await SSLPlans.findById(req.params.id).populate(
+        "supplier",
+        "name company"
+      );
+
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói SSL!",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy thông tin gói SSL thành công!",
+        data: plan,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy chi tiết gói SSL.",
+        error: err.message,
+      });
+    }
+  },
+
+  updateSslPlans: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name } = req.body;
+
+      const plan = await SSLPlans.findById(id);
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Gói SSL không tồn tại!",
+        });
+      }
+
+      if (name && name !== plan.name) {
+        const duplicateName = await SSLPlans.findOne({ name });
+        if (duplicateName && duplicateName._id.toString() !== id) {
+          return res.status(400).json({
+            success: false,
+            message: "Tên gói SSL đã tồn tại! Vui lòng nhập tên khác!",
+          });
         }
       }
-      await sslPlans.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Gói DV SSL', 'Cập nhật', `/trang-chu/dich-vu/cap-nhat-ssl/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
+
+      const updatedPlan = await SSLPlans.findByIdAndUpdate(
+        id,
+        { $set: req.body },
+        { new: true }
+      ).populate("supplier", "name company");
+
+      await logAction(
+        req.auth._id,
+        "Gói DV SSL",
+        "Cập nhật",
+        `/goi-dich-vu/ssl/${id}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật gói SSL thành công!",
+        data: updatedPlan,
+      });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi cập nhật gói SSL.",
+        error: err.message,
+      });
     }
-  }
-}
+  },
+
+  deleteSslPlans: async (req, res) => {
+    try {
+      const deleted = await SSLPlans.findByIdAndDelete(req.params.id);
+
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy gói SSL để xóa.",
+        });
+      }
+
+      await logAction(req.auth._id, "Gói DV SSL", "Xóa");
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa gói SSL thành công!",
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi khi xóa gói SSL.",
+        error: err.message,
+      });
+    }
+  },
+};
 
 module.exports = sslPlansController;

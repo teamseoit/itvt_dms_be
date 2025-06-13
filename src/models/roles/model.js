@@ -466,61 +466,60 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b073"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        // xem server
+        // xem gói server
         {
           _id: new ObjectId("668653c9e55c5173ec41a989"),
           permission_id: new ObjectId("66746678f7f723b779b1a075"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        // tạo server
+        // tạo gói server
         {
           _id: new ObjectId("668653c9e55c5173ec41c985"),
           permission_id: new ObjectId("66746678f7f723b779b1b074"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        // sửa server
+        // sửa gói server
         {
           _id: new ObjectId("668653c9e55c5173ec41c987"),
           permission_id: new ObjectId("66746678f7f723b779b1b075"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-        // xóa server
+        // xóa gói server
         {
           _id: new ObjectId("668653c9e55c5173ec41c989"),
           permission_id: new ObjectId("66746678f7f723b779b1b076"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
-      
-      //Tạo gói toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ae41a982"),
-        permission_id: new ObjectId("66746678f7f500b779b1e081"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ae41a983"),
-        permission_id: new ObjectId("66746678f7f500b779b1e082"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ae41a984"),
-        permission_id: new ObjectId("66746678f7f500b779b1e083"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói toplist
+      // xem gói toplist
       {
         _id: new ObjectId("668653c9e55c5173ae41a985"),
         permission_id: new ObjectId("66746678f7f500b779b1e084"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Xóa dịch vụ ssl
+      // tạo gói toplist
       {
-        _id: new ObjectId("668653c9e55c5173ec41c98b"),
-        permission_id: new ObjectId("667467eb263fb998b9925d39"),
+        _id: new ObjectId("668653c9e55c5173ae41a982"),
+        permission_id: new ObjectId("66746678f7f500b779b1e081"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
+      // sửa gói toplist
+      {
+        _id: new ObjectId("668653c9e55c5173ae41a983"),
+        permission_id: new ObjectId("66746678f7f500b779b1e082"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa gói toplist
+      {
+        _id: new ObjectId("668653c9e55c5173ae41a984"),
+        permission_id: new ObjectId("66746678f7f500b779b1e083"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+  
+
+
+
+
+
       //Tạo dịch vụ viết bài content & PR
       {
         _id: new ObjectId("668653c9e55c5173ec41c98d"),

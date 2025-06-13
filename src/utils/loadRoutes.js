@@ -36,6 +36,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
   const maintenancePlansRoutes = require("../routes/plans/maintenance/maintenance");
   const networkPlansRoutes = require("../routes/plans/network/network");
   const serverPlansRoutes = require("../routes/plans/server/server");
+  const toplistPlansRoutes = require("../routes/plans/toplist/toplist");
 
   // dịch vụ itvt
   const itvtDomainRoutes = require("../routes/itvt/domain/domain");
@@ -97,6 +98,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     { path: "/api/plans/maintenance", handler: maintenancePlansRoutes, protected: true },
     { path: "/api/plans/network", handler: networkPlansRoutes, protected: true },
     { path: "/api/plans/server", handler: serverPlansRoutes, protected: true },
+    { path: "/api/plans/toplist", handler: toplistPlansRoutes, protected: true },
 
     // dich vu itvt
     { path: "/api/itvt/domain", handler: itvtDomainRoutes, protected: true },

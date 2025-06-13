@@ -418,31 +418,31 @@ const init = async () => {
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
       
-      
-      //Tạo gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c979"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c97b"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c97d"),
-        permission_id: new ObjectId("66746678f7f723b779b1b070"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói bảo trì
+      // xem gói bảo trì
       {
         _id: new ObjectId("668653c9e55c5173ec41a97d"),
         permission_id: new ObjectId("66746678f7f723b779b1a070"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
+      // tạo gói bảo trì
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c979"),
+        permission_id: new ObjectId("66746678f7f723b779b1b06e"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa gói bảo trì
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c97b"),
+        permission_id: new ObjectId("66746678f7f723b779b1b06f"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa gói bảo trì
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c97d"),
+        permission_id: new ObjectId("66746678f7f723b779b1b070"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      
       //Tạo gói sim 4G
       {
         _id: new ObjectId("668653c9e55c5173ec41c97f"),

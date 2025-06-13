@@ -34,7 +34,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
   const sslPlansRoutes = require("../routes/plans/ssl/ssl");
   const contentPlansRoutes = require("../routes/plans/content/content");
   const maintenancePlansRoutes = require("../routes/plans/maintenance/maintenance");
-  const mobileNetworkPlansRoutes = require("../routes/plans/mobile-network/mobileNetwork");
+  const networkPlansRoutes = require("../routes/plans/network/network");
   const serverPlansRoutes = require("../routes/plans/server/server");
 
   // dịch vụ itvt
@@ -95,7 +95,7 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     { path: "/api/plans/ssl", handler: sslPlansRoutes, protected: true },
     { path: "/api/plans/content", handler: contentPlansRoutes, protected: true },
     { path: "/api/plans/maintenance", handler: maintenancePlansRoutes, protected: true },
-    { path: "/api/plans/mobile-network", handler: mobileNetworkPlansRoutes, protected: true },
+    { path: "/api/plans/network", handler: networkPlansRoutes, protected: true },
     { path: "/api/plans/server", handler: serverPlansRoutes, protected: true },
 
     // dich vu itvt

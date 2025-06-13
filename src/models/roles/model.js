@@ -417,56 +417,56 @@ const init = async () => {
           permission_id: new ObjectId("66746678f7f723b779b1b06d"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+        // xem gói bảo trì
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a97d"),
+          permission_id: new ObjectId("66746678f7f723b779b1a070"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói bảo trì
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c979"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06e"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói bảo trì
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c97b"),
+          permission_id: new ObjectId("66746678f7f723b779b1b06f"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói bảo trì
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c97d"),
+          permission_id: new ObjectId("66746678f7f723b779b1b070"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      // xem gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a97d"),
-        permission_id: new ObjectId("66746678f7f723b779b1a070"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // tạo gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c979"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // sửa gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c97b"),
-        permission_id: new ObjectId("66746678f7f723b779b1b06f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // xóa gói bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c97d"),
-        permission_id: new ObjectId("66746678f7f723b779b1b070"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+        // xem gói mạng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41a983"),
+          permission_id: new ObjectId("66746678f7f723b779b1a073"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // tạo gói mạng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c97f"),
+          permission_id: new ObjectId("66746678f7f723b779b1b071"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa gói mạng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c981"),
+          permission_id: new ObjectId("66746678f7f723b779b1b072"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa gói mạng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c983"),
+          permission_id: new ObjectId("66746678f7f723b779b1b073"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
-      //Tạo gói sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c97f"),
-        permission_id: new ObjectId("66746678f7f723b779b1b071"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa gói sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c981"),
-        permission_id: new ObjectId("66746678f7f723b779b1b072"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa gói sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c983"),
-        permission_id: new ObjectId("66746678f7f723b779b1b073"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem gói sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a983"),
-        permission_id: new ObjectId("66746678f7f723b779b1a073"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
       //Tạo server
       {
         _id: new ObjectId("668653c9e55c5173ec41c985"),

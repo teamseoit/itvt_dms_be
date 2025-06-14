@@ -33,6 +33,10 @@ const serverPlansSchema = new mongoose.Schema({
     type: Number,
     default: 1
   },
+  ipAddress: {
+    type: [String],
+    default: []
+  },
   description: {
     type: String,
     default: ''

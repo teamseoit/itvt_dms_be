@@ -164,6 +164,7 @@ const init = async () => {
             permission_parent_id: new ObjectId("667463d04bede188dfb46d75"),
             name: "Xóa nhà cung cấp server",
         },
+        
         // hợp đồng
         {
             _id: new ObjectId("667463d04bede188dfb46d7a"),
@@ -174,11 +175,11 @@ const init = async () => {
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
             name: "Xem hợp đồng",
         },
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7b"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Tạo hợp đồng",
-        },
+        // {
+        //     _id: new ObjectId("667463d04bede188dfb46d7b"),
+        //     permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
+        //     name: "Tạo hợp đồng",
+        // },
         {
             _id: new ObjectId("667463d04bede188dfb4610c"),
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
@@ -189,13 +190,8 @@ const init = async () => {
             permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
             name: "Xóa hợp đồng",
         },
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7c"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Gia hạn hợp đồng",
-        },
 
-        //gói dịch vụ
+        // gói dịch vụ
         {
             _id: new ObjectId("667464b5500bf3ad04c24f47"),
             name: "Gói dịch vụ",
@@ -381,106 +377,20 @@ const init = async () => {
             name: "Xóa gói toplist",
         },
 
-        // dịch vụ ITVT
-         {
-            _id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Dịch vụ ITVT",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e331"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xem dịch vụ tên miền",
-        },
-        {
-            _id: new ObjectId("6684196550a36692df218d8d"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Tạo dịch vụ tên miền",
-        },
-         {
-            _id: new ObjectId("66746678f7f723b779a9e311"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Sửa dịch vụ tên miền",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e321"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xóa dịch vụ tên miền",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e431"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xem dịch vụ hosting",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e491"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Tạo dịch vụ hosting",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e411"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Sửa dịch vụ hosting",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e421"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xóa dịch vụ hosting",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e531"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xem dịch vụ email",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e591"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Tạo dịch vụ email",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e511"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Sửa dịch vụ email",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e521"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xóa dịch vụ email",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e631"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xem dịch vụ ssl",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e691"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Tạo dịch vụ ssl",
-        }, 
-        {
-            _id: new ObjectId("66746678f7f723b779a9e611"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Sửa dịch vụ ssl",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779a9e621"),
-            permission_parent_id: new ObjectId("667464b5500bf3ea04c24a47"),
-            name: "Xóa dịch vụ ssl",
-        },
-
-        //dịch vụ
+        // dịch vụ
         {
             _id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Dịch vụ",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d2e"),
-            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ tên miền",
-        },
-        {
             _id: new ObjectId("667467eb263fb998b9925a30"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Xem dịch vụ tên miền",
+        },
+        {
+            _id: new ObjectId("667467eb263fb998b9925d2e"),
+            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+            name: "Tạo dịch vụ tên miền",
         },
         {
             _id: new ObjectId("667467eb263fb998b9925d2f"),

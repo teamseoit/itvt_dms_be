@@ -1,71 +1,95 @@
 const mongoose = require("mongoose");
+const dayjs = require("dayjs");
 
-const domainServicesSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
+const domainServicesSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    periodValue: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    periodUnit: {
+      type: String,
+      default: "năm",
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customers",
+      required: true,
+      index: true,
+    },
+    domainPlan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DomainPlans",
+      default: null,
+    },
+    serverPlan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServerPlans",
+      default: null,
+    },
+    vatIncluded: {
+      type: Boolean,
+      default: false,
+    },
+    totalPrice: {
+      type: Number,
+      min: 0,
+    },
+    registeredAt: {
+      type: Date,
+    },
+    expiredAt: {
+      type: Date,
+    },
+    pingCloudflare: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: Number,
+      enum: [-1, 0, 1],
+      default: 1,
+    },
   },
-  periods: {
-    type: Number,
-    required: true
-  },
-  supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
-  },
-  domain_plan_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "DomainPlans"
-  },
-  server_plan_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "ServerPlans"
-  },
-  customer_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Customers",
-    index: true
-  },
-  ping_cloudflare: {
-    type: Boolean,
-    default: false
-  },
-  status: {
-    type: Number,
-    default: 1
-  },
-  before_payment: {
-    type: Boolean,
-    default: false
-  },
-  after_payment: {
-    type: Boolean,
-    default: false
-  },
-  registeredAt: {
-    type: Date
-  },
-  expiredAt: {
-    type: Date
-  },
-}, {timestamps: true});
+  { timestamps: true }
+);
 
-// domainServicesSchema.pre('save', async function (next){
+domainServicesSchema.pre("validate", async function (next) {
+  try {
+    if (this.domainPlan) {
+      const DomainPlan = mongoose.model("DomainPlans");
+      const plan = await DomainPlan.findById(this.domainPlan).lean();
 
-//   const date = new Date(this.registeredAt);
-//   this.expiredAt =  new Date(date.setFullYear(date.getFullYear() + this.periods));
+      if (plan && plan.retailPrice && this.periodValue) {
+        this.totalPrice = plan.retailPrice * this.periodValue;
+      }
+    }
 
-//   next()
-// })
+    // Tính expiredAt nếu có registeredAt
+    if (this.registeredAt && this.periodValue && this.periodUnit) {
+      const unitMap = {
+        "năm": "year",
+      };
 
-domainServicesSchema.post(['save','updateOne','create'], async function (next) {
-  const ModelContract = require('../../contracts/model');
-  if (this.customer_id) {
-    ModelContract.create_or_update_contract(this.customer_id);
-  } else if (this['$set']?.customer_id) {
-    ModelContract.create_or_update_contract(this['$set']?.customer_id);
+      const unitForDayjs = unitMap[this.periodUnit];
+      if (unitForDayjs) {
+        this.expiredAt = dayjs(this.registeredAt)
+          .add(this.periodValue, unitForDayjs)
+          .toDate();
+      }
+    }
+
+    next();
+  } catch (err) {
+    next(err);
   }
 });
 
-let DomainServices = mongoose.model("DomainServices", domainServicesSchema);
-module.exports = DomainServices;
+
+module.exports = mongoose.model("DomainServices", domainServicesSchema);

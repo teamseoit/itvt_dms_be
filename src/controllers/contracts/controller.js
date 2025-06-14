@@ -2,86 +2,103 @@ const Contracts = require("../../models/contracts/model");
 const logAction = require("../../middleware/actionLogs");
 
 const contractController = {
-  getContract: async(req, res) => {
+  getContracts: async (req, res) => {
     try {
-      const contract = await Contracts.find().sort({"createdAt": -1}).populate('customer_id');
-      return res.status(200).json(contract);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+  
+      const [contracts, total] = await Promise.all([
+        Contracts.find()
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("customer"),
+        Contracts.countDocuments()
+      ]);
+  
+      const totalPages = Math.ceil(total / limit);
+  
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách hợp đồng thành công.",
+        data: contracts,
+        meta: {
+          page,
+          limit,
+          totalDocs: total,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching contracts:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách hợp đồng.",
+      });
     }
   },
 
-  getDetailContract: async(req, res) => {
+  getContractById: async (req, res) => {
     try {
-      const contract = await Contracts.findById(req.params.id).populate('customer_id');
-      return res.status(200).json(contract);
-    } catch(err) {
+      const contract = await Contracts.findById(req.params.id)
+        .populate("customer")
+        .populate("services.serviceId");
+
+      if (!contract) {
+        return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
+      }
+
+      res.status(200).json({ success: true, data: contract });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      res.status(500).json({ success: false, message: err.message });
     }
   },
 
-  deleteContract: async(req, res) => {
-    try {
-      await Contracts.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Hợp đồng', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateContract: async(req, res) => {
+  updateContract: async (req, res) => {
     try {
       const contract = await Contracts.findById(req.params.id);
-      let total_price = contract.total_price;
-      let deposit_amount = req.body.deposit_amount;
-      let remaining_cost_body = req.body.remaining_cost;
-      let remaining_cost = 0;
-      
-      if (deposit_amount) {
-        if (deposit_amount == total_price) {
-          await contract.updateOne({
-            $set: {
-              deposit_amount: deposit_amount,
-              remaining_cost: 0,
-              status: 2
-            }
-          });
-        } else {
-          remaining_cost = total_price - deposit_amount;
-          await contract.updateOne({
-            $set: {
-              deposit_amount: deposit_amount,
-              remaining_cost: remaining_cost,
-              status: 1
-            }
-          });
-        }
+      if (!contract) {
+        return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
-      if (remaining_cost_body) {
-        if ((contract.deposit_amount + remaining_cost_body) === total_price) {
-          await contract.updateOne({
-            $set: {
-              deposit_amount: total_price,
-              remaining_cost: 0,
-              status: 2
-            }
-          });
-        }
-      }
+      const total = contract.financials.grandTotal;
+      const currentPaid = contract.financials.amountPaid;
+      const addPayment = Number(req.body.amountPaid || 0);
+      const newPaid = currentPaid + addPayment;
 
-      await contract.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Hợp đồng', 'Cập nhật', `/trang-chu/hop-dong/cap-nhat-hop-dong/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
+      let updateData = {
+        ...req.body,
+        financials: {
+          ...contract.financials,
+          amountPaid: newPaid,
+          amountRemaining: total - newPaid,
+          isFullyPaid: newPaid >= total,
+        },
+      };
+
+      await contract.updateOne({ $set: updateData });
+      await logAction(req.auth._id, "Hợp đồng", "Cập nhật", `/hop-dong/${req.params.id}`);
+
+      res.status(200).json({ success: true, message: "Cập nhật thành công!" });
+    } catch (err) {
       console.error(err);
-      return res.status(500).send(err.message);
+      res.status(500).json({ success: false, message: err.message });
     }
-  }
-}
+  },
+
+  deleteContract: async (req, res) => {
+    try {
+      await Contracts.findByIdAndDelete(req.params.id);
+      await logAction(req.auth._id, "Hợp đồng", "Xóa");
+
+      res.status(200).json({ success: true, message: "Xóa thành công!" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+};
 
 module.exports = contractController;

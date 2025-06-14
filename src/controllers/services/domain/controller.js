@@ -1,293 +1,233 @@
 const dayjs = require('dayjs');
-
 const DomainServices = require("../../../models/services/domain/model");
-const CronDomainServices = require("../../../models/services/domain/model_cron");
 const logAction = require("../../../middleware/actionLogs");
 
 const domainServicesController = {
-  addDomainServices: async(req, res) => {
+  getDomainServices: async (req, res) => {
     try {
-      // dịch vụ
-      const {name} = req.body;
-      const existingName = await DomainServices.findOne({name});
-      if (existingName) {
-        if (existingName.name === name) {
-          return res.status(400).json({message: 'Tên miền đăng ký đã tồn tại! Vui lòng nhập tên miền khác!'});
-        }
-      }
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
 
-      const newDomainServices = new DomainServices(req.body);
-      newDomainServices.expiredAt = new Date(newDomainServices.registeredAt);
-      newDomainServices.expiredAt.setFullYear(newDomainServices.expiredAt.getFullYear() + req.body.periods);
-      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Thêm mới');
-      const saveDomainServices = await newDomainServices.save();
-
-      // cron dịch vụ
-      const newCronDomainServices = new CronDomainServices(req.body);
-      newCronDomainServices.expiredAt = new Date(newDomainServices.registeredAt);
-      newCronDomainServices.expiredAt.setFullYear(newCronDomainServices.expiredAt.getFullYear() + req.body.periods);
-      await newCronDomainServices.save();
-
-      return res.status(200).json(saveDomainServices);
-    } catch(err) {
-      console.error(err)
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getDomainServices: async(req, res) => {
-    try {
       const { keyword } = req.query;
 
-      let filter = {};
+      const filter = {};
+
       if (keyword) {
-        filter = {name: { $regex: keyword, $options: 'i' }};
+        filter.name = { $regex: keyword, $options: 'i' };
       }
 
-      let domainServices = await DomainServices.find().sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone');        
+      const [domainServices, total] = await Promise.all([
+        DomainServices.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('domainPlan')
+          .populate('serverPlan')
+          .populate('customer', 'fullName phoneNumber')
+          .lean(),
+        DomainServices.countDocuments(filter)
+      ]);
 
-      for (const item of domainServices) {
-        const supplier_id = item.domain_plan_id.supplier_id;
-        try {
-          domainServices = await DomainServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                supplier_id: supplier_id
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+      const totalPages = Math.ceil(total / limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách dịch vụ tên miền thành công.",
+        data: domainServices,
+        meta: {
+          page,
+          limit,
+          totalDocs: total,
+          totalPages
         }
+      });
+    } catch (err) {
+      console.error('Error getting domain services:', err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách dịch vụ tên miền."
+      });
+    }
+  },
+
+  addDomainServices: async (req, res) => {
+    try {
+      const { name } = req.body;
+      const existing = await DomainServices.findOne({ name });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tên miền đăng ký đã tồn tại! Vui lòng nhập tên miền khác!',
+        });
       }
 
-      domainServices = await DomainServices.find(filter).sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
+      const newDomain = await DomainServices.create(req.body);
+      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Thêm mới');
 
-      return res.status(200).json(domainServices);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(201).json({
+        success: true,
+        message: "Thêm dịch vụ tên miền thành công.",
+        data: newDomain
+      });
+    } catch (err) {
+      console.error("Error creating domain service:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Lỗi máy chủ khi thêm dịch vụ tên miền." 
+      });
     }
   },
 
-  getDetailDomainServices: async(req, res) => {
+  getDetailDomainServices: async (req, res) => {
     try {
-      const domainServices = await DomainServices.findById(req.params.id)
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
+      const { id } = req.params;
+      const domain = await DomainServices.findById(id);
 
-      return res.status(200).json(domainServices);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      if (!domain) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ tên miền."
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết dịch vụ tên miền thành công.",
+        data: domain
+      });
+    } catch (err) {
+      console.error("Error fetching domain service details:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Lỗi máy chủ khi lấy chi tiết dịch vụ tên miền." 
+      });
     }
   },
 
-  deleteDomainServices: async(req, res) => {
+  updateDomainServices: async (req, res) => {
     try {
-      await DomainServices.findByIdAndDelete(req.params.id);
+      const { id } = req.params;
+      const updatedDomain = await DomainServices.findByIdAndUpdate(
+        id,
+        { $set: req.body },
+        { new: true }
+      );
+
+      if (!updatedDomain) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Không tìm thấy dịch vụ tên miền để cập nhật." 
+        });
+      }
+
+      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Cập nhật', `/trang-chu/dich-vu/cap-nhat-ten-mien/${id}`);
+
+      return res.status(200).json({ 
+        success: true, 
+        message: "Cập nhật dịch vụ tên miền thành công.",
+        data: updatedDomain
+      });
+    } catch (err) {
+      console.error("Error updating domain service:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Lỗi máy chủ khi cập nhật dịch vụ tên miền." 
+      });
+    }
+  },
+
+  deleteDomainServices: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const domain = await DomainServices.findByIdAndDelete(id);
+
+      if (!domain) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ tên miền để xóa."
+        });
+      }
+
       await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      return res.status(200).json({ 
+        success: true, 
+        message: "Xóa dịch vụ tên miền thành công." 
+      });
+    } catch (err) {
+      console.error("Error deleting domain service:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Lỗi máy chủ khi xóa dịch vụ tên miền." 
+      });
     }
   },
 
-  updateDomainServices: async(req, res) => {
+  getDomainServicesStatusAutoUpdate: async (req, res) => {
     try {
-      const domainServices = await DomainServices.findById(req.params.id);
-      if (req.body.periods) {
-        const currentDate = new Date();
-        const expiredAt = currentDate.setFullYear(currentDate.getFullYear() + req.body.periods);
-        await domainServices.updateOne({$set: {expiredAt: expiredAt, status: 1}});
-      }
-      if (req.body.before_payment) {
-        await domainServices.updateOne({$set: {before_payment: true}});
-      }
-      await domainServices.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Cập nhật', `/trang-chu/dich-vu/cap-nhat-ten-mien/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
 
-  getDomainServicesExpired: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      // tìm những domain service hết hạn
-      var domainServicesExpired = await DomainServices.find(
-        {
-          expiredAt: {$lte: currentDate}
-        }
+      const currentDate = dayjs();
+
+      // Update expired domains
+      const expiredFilter = { expiredAt: { $lte: currentDate.toDate() } };
+      const expired = await DomainServices.updateMany(
+        expiredFilter,
+        { $set: { status: 3 } }
       );
 
-      for (const item of domainServicesExpired) {
-        try {
-          // cập nhập bằng 3
-          domainServicesExpired = await DomainServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 3
-              }
-            },
-            { new: true }
-          );
-        } catch (error) {
-          res.status(500).json(error);
+      // Update expiring domains
+      const expiringFilter = {
+        expiredAt: {
+          $gt: currentDate.toDate(),
+          $lte: currentDate.add(30, 'day').endOf('day').toDate()
         }
-      }
-
-      domainServicesExpired = await DomainServices
-        .find(
-          {
-            expiredAt: {$lte: currentDate}
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
-
-      res.status(200).json(domainServicesExpired);
-    } catch(err) {
-      res.status(500).json(err);
-    }
-
-    // try {
-    //     var currentDate = new Date();
-
-    //     const [
-    //       data,
-    //       data_update
-    //     ] = await Promise.all([
-    //       DomainServices.find({expiredAt: {$lte: currentDate}}).sort({"createdAt": -1})
-    //         .populate('domain_plan_id')
-    //         .populate('server_plan_id', 'name')
-    //         .populate('customer_id', 'fullname gender email phone')
-    //         .populate('supplier_id', 'name company'),
-
-    //       DomainServices.updateMany({expiredAt: {$lte: currentDate}},{
-    //         $set: {
-    //           status: 3
-    //         }      
-    //       })
-    //     ])
-
-    //     data.forEach(item =>{
-    //       item.status = 3
-    //     })
-    //     return res.status(200).json(data);
-    // } catch (err) {
-    //   console.error(err);
-    //   return res.status(500).send(err.message);
-    // }
-  },
-
-  getDomainServicesExpiring: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var dateExpired = dayjs(currentDate).add(30, 'day');
-      var domainServicesExpiring = await DomainServices.find(
-        {
-          expiredAt: {
-            $gte: dayjs(currentDate).startOf('day').toDate(),
-            $lte: dayjs(dateExpired).endOf('day').toDate()
-          }
-        }
+      };
+      const expiring = await DomainServices.updateMany(
+        expiringFilter,
+        { $set: { status: 2 } }
       );
 
-      for (const item of domainServicesExpiring) {
-        try {
-          domainServicesExpiring = await DomainServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 2
-              }
-            },
-            { new: true }
-          );
-        } catch (error) {
-          res.status(500).json(error);
+      // Get paginated results
+      const [expiredDomains, expiringDomains, totalExpired, totalExpiring] = await Promise.all([
+        DomainServices.find(expiredFilter).skip(skip).limit(limit),
+        DomainServices.find(expiringFilter).skip(skip).limit(limit),
+        DomainServices.countDocuments(expiredFilter),
+        DomainServices.countDocuments(expiringFilter)
+      ]);
+
+      const totalPages = Math.ceil((totalExpired + totalExpiring) / limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật trạng thái tên miền hết hạn và sắp hết hạn thành công.",
+        data: {
+          expired: {
+            count: expired.modifiedCount,
+            domains: expiredDomains
+          },
+          expiring: {
+            count: expiring.modifiedCount,
+            domains: expiringDomains
+          }
+        },
+        meta: {
+          page,
+          limit,
+          totalDocs: totalExpired + totalExpiring,
+          totalPages
         }
-      }
-
-      domainServicesExpiring = await DomainServices
-        .find(
-          {
-            expiredAt: {
-              $gte: dayjs(currentDate).startOf('day').toDate(),
-              $lte: dayjs(dateExpired).endOf('day').toDate()
-            }
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
-
-      return res.status(200).json(domainServicesExpiring);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      });
+    } catch (err) {
+      console.error("Error updating domain service status:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Lỗi máy chủ khi cập nhật trạng thái dịch vụ tên miền." 
+      });
     }
   },
-
-  getDomainServicesBeforePayment: async(req, res) => {
-    try {
-      const domainServicesBeforePayment = await DomainServices
-        .find(
-          {
-            before_payment: true
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
-
-      return res.status(200).json(domainServicesBeforePayment);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getDomainServicesByCustomerId: async(req, res) => {
-    try {
-      const customer_id = req.params.customer_id;
-      const domain_services = await DomainServices
-        .find({
-          customer_id: customer_id
-        })
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('supplier_id', 'name company');
-      return res.status(200).json(domain_services);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  }
-}
+};
 
 module.exports = domainServicesController;

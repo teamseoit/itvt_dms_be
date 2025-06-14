@@ -1,4 +1,12 @@
 const DomainPlan = require("../../../models/plans/domain/model");
+const DomainServices = require("../../../models/services/domain/model");
+const EmailServices = require("../../../models/services/email/model");
+const HostingServices = require("../../../models/services/hosting/model");
+const WebsiteServices = require("../../../models/services/website/model");
+const SslServices = require("../../../models/services/ssl/model");
+const MaintenanceServices = require("../../../models/services/maintenance/model");
+const DomainITVT = require("../../../models/itvt/domain/model");
+const SslITVT = require("../../../models/itvt/ssl/model");
 const logAction = require("../../../middleware/actionLogs");
 
 const domainPlansController = {
@@ -144,14 +152,60 @@ const domainPlansController = {
 
   deleteDomainPlan: async (req, res) => {
     try {
-      const deleted = await DomainPlan.findByIdAndDelete(req.params.id);
+      const { id } = req.params;
 
-      if (!deleted) {
+      // Kiểm tra xem gói tên miền có tồn tại không
+      const plan = await DomainPlan.findById(id);
+      if (!plan) {
         return res.status(404).json({
           success: false,
           message: "Không tìm thấy gói tên miền để xóa."
         });
       }
+
+      // Kiểm tra xem gói tên miền có đang được sử dụng không
+      const [
+        domainServicesCount,
+        emailServicesCount,
+        hostingServicesCount,
+        websiteServicesCount,
+        sslServicesCount,
+        maintenanceServicesCount,
+        domainITVTCount,
+        sslITVTCount
+      ] = await Promise.all([
+        DomainServices.countDocuments({ domainPlan: id }),
+        EmailServices.countDocuments({ domain_plan_id: id }),
+        HostingServices.countDocuments({ domain_plan_id: id }),
+        WebsiteServices.countDocuments({ domain_plan_id: id }),
+        SslServices.countDocuments({ domain_plan_id: id }),
+        MaintenanceServices.countDocuments({ domain_plan_id: id }),
+        DomainITVT.countDocuments({ domain_plan_id: id }),
+        SslITVT.countDocuments({ domain_plan_id: id })
+      ]);
+
+      const totalUsage = domainServicesCount + emailServicesCount + hostingServicesCount + 
+                        websiteServicesCount + sslServicesCount + maintenanceServicesCount + 
+                        domainITVTCount + sslITVTCount;
+
+      if (totalUsage > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Không thể xóa gói tên miền "${plan.name}" vì đang được sử dụng bởi ${totalUsage} dịch vụ. Vui lòng xóa tất cả dịch vụ liên quan trước khi xóa gói tên miền.`,
+          usageDetails: {
+            domainServices: domainServicesCount,
+            emailServices: emailServicesCount,
+            hostingServices: hostingServicesCount,
+            websiteServices: websiteServicesCount,
+            sslServices: sslServicesCount,
+            maintenanceServices: maintenanceServicesCount,
+            domainITVT: domainITVTCount,
+            sslITVT: sslITVTCount
+          }
+        });
+      }
+
+      const deleted = await DomainPlan.findByIdAndDelete(id);
 
       await logAction(req.auth._id, "Gói DV Tên miền", "Xóa");
 

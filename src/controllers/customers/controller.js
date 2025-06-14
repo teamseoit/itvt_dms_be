@@ -13,6 +13,9 @@ const ContentServices = require("../../models/services/content/model");
 const ToplistServices = require("../../models/services/toplist/model");
 const MaintenanceServices = require("../../models/services/maintenance/model");
 const MobileNetworkServices = require("../../models/services/mobile-network/model");
+const Contracts = require("../../models/contracts/model");
+const DomainITVT = require("../../models/itvt/domain/model");
+const SslITVT = require("../../models/itvt/ssl/model");
 
 const checkServicesLinked = async (customerId) => {
   const services = [
@@ -20,7 +23,31 @@ const checkServicesLinked = async (customerId) => {
     WebsiteServices, ContentServices, ToplistServices,
     MaintenanceServices, MobileNetworkServices
   ];
-  for (const svc of services) if (await svc.exists({ customer_id: customerId })) return true;
+  
+  for (const svc of services) {
+    const hasCustomerId = await svc.exists({ customer_id: customerId });
+    const hasCustomer = await svc.exists({ customer: customerId });
+    
+    if (hasCustomerId || hasCustomer) {
+      return true;
+    }
+  }
+  
+  // Kiểm tra Contracts
+  const hasContract = await Contracts.exists({ customer: customerId });
+  if (hasContract) {
+    return true;
+  }
+  
+  // Kiểm tra các dịch vụ ITVT
+  const itvtServices = [DomainITVT, SslITVT];
+  for (const svc of itvtServices) {
+    const hasITVTService = await svc.exists({ customer_id: customerId });
+    if (hasITVTService) {
+      return true;
+    }
+  }
+  
   return false;
 };
 
@@ -38,7 +65,7 @@ const customerController = {
       if (keyword) {
         filter.$or = [
           { fullName: { $regex: keyword, $options: 'i' } },
-          { email: { $regex: keyword, $options: 'i' } }
+          { phoneNumber: keyword }
         ];
       }
 
@@ -263,7 +290,7 @@ const customerController = {
       if (hasLinkedServices) {
         return res.status(400).json({
           success: false,
-          message: "Không thể xóa khách hàng khi đang được sử dụng!"
+          message: "Không thể xóa khách hàng khi đang sử dụng dịch vụ!"
         });
       }
   

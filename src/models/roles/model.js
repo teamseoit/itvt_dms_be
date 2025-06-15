@@ -425,29 +425,29 @@ const init = async () => {
   
     // dịch vụ
       // xem dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a991"),
-        permission_id: new ObjectId("667467eb263fb998b9925a30"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // tạo dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c993"),
-        permission_id: new ObjectId("667467eb263fb998b9925d2e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // sửa dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c995"),
-        permission_id: new ObjectId("667467eb263fb998b9925d2f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // xóa dịch vụ tên miền
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c997"),
-        permission_id: new ObjectId("667467eb263fb998b9925d30"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41a991"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925a30"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // // tạo dịch vụ tên miền
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c993"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d2e"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // // sửa dịch vụ tên miền
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c995"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d2f"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // // xóa dịch vụ tên miền
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c997"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d30"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
 
 
 
@@ -568,30 +568,24 @@ const init = async () => {
       },
 
       //backups
-      //Xem thống kê
-      {
-        _id: new ObjectId("674153c9e55c5173ec41c9b1"),
-        permission_id: new ObjectId("643263d04bede188dfb46d77"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo sao lưu dữ liệu
-      {
-        _id: new ObjectId("674153c9e55c5173ec41c9a9"),
-        permission_id: new ObjectId("643263d04bede188dfb46d76"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem sao lưu dữ liệu
-      {
-        _id: new ObjectId("674153c9e55c5173ec41c9b2"),
-        permission_id: new ObjectId("643263d04bede188dfb46d78"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem lịch sử thao tác
-      {
-        _id: new ObjectId("674153c9e55c5173ec41c9b3"),
-        permission_id: new ObjectId("643263d04bede188dfb46d79"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+        // xem thống kê
+        {
+          _id: new ObjectId("674153c9e55c5173ec41c9b1"),
+          permission_id: new ObjectId("643263d04bede188dfb46d77"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xem sao lưu dữ liệu
+        {
+          _id: new ObjectId("674153c9e55c5173ec41c9b2"),
+          permission_id: new ObjectId("643263d04bede188dfb46d78"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xem lịch sử thao tác
+        {
+          _id: new ObjectId("674153c9e55c5173ec41c9b3"),
+          permission_id: new ObjectId("643263d04bede188dfb46d79"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
       
       // ip whitelist
       {

@@ -27,7 +27,11 @@ const init = async () =>{
       await new IpWhitelists({
         ip: "171.243.62.18",
         createdBy: adminUser._id
-      }).save()
+      }).save();
+      await new IpWhitelists({
+        ip: "171.243.63.94",
+        createdBy: adminUser._id
+      }).save();
     }
   }
 }

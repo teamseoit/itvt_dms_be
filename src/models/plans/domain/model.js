@@ -2,14 +2,14 @@ const mongoose = require("mongoose");
 
 const domainPlanSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
+    nameAction: {
+      type: Number,
       required: true,
       index: true,
     },
     extension: {
       type: String,
-      required: true, // ví dụ: ".com", ".vn"
+      required: true,
     },
     purchasePrice: {
       type: Number,
@@ -21,23 +21,20 @@ const domainPlanSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    renewalPrice: {
+    vatPrice: {
       type: Number,
-      required: true, // giá gia hạn mỗi năm
     },
-    registrationYears: {
+    vat: {
       type: Number,
-      default: 1, // số năm đăng ký mặc định
+      default: 0,
+      min: 0,
+      max: 100
     },
-    supplier: {
+    supplierId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceSuppliers",
       required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true, // bật/tắt hiển thị gói tên miền
-    },
+    }
   },
   { timestamps: true }
 );

@@ -16,14 +16,27 @@ const domainPlansController = {
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
 
-      const [domainPlans, totalDocs] = await Promise.all([
-        DomainPlan.find()
+      const { nameAction } = req.query;
+      const filter = {};
+
+      if (nameAction && nameAction == 0) {
+        filter.nameAction = 0;
+      } else if (nameAction == 1) {
+        filter.nameAction = 1;
+      } else if (nameAction == 2) {
+        filter.nameAction = 2;
+      }
+
+      const [domainPlans, total] = await Promise.all([
+        DomainPlan.find(filter)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate("supplier", "name company"),
-        DomainPlan.countDocuments()
+          .populate("supplierId", "name company"),
+        DomainPlan.countDocuments(filter)
       ]);
+
+      const totalPages = Math.ceil(total / limit);
 
       return res.status(200).json({
         success: true,
@@ -32,8 +45,8 @@ const domainPlansController = {
         meta: {
           page,
           limit,
-          totalDocs,
-          totalPages: Math.ceil(totalDocs / limit)
+          totalDocs: total,
+          totalPages
         }
       });
     } catch (err) {
@@ -48,17 +61,18 @@ const domainPlansController = {
 
   addDomainPlan: async (req, res) => {
     try {
-      const { name, extension } = req.body;
+      const { purchasePrice, vat } = req.body;
 
-      const existingPlan = await DomainPlan.findOne({ name, extension });
-      if (existingPlan) {
-        return res.status(400).json({
-          success: false,
-          message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!"
-        });
-      }
+      const vatPrice = vat && vat > 0 
+        ? purchasePrice + (purchasePrice * (vat / 100))
+        : 0;
 
-      const newPlan = new DomainPlan(req.body);
+      const domainPlan = {
+        ...req.body,
+        vatPrice
+      };
+
+      const newPlan = new DomainPlan(domainPlan);
       const savedPlan = await newPlan.save();
 
       await logAction(req.auth._id, "Gói DV Tên miền", "Thêm mới");
@@ -68,11 +82,12 @@ const domainPlansController = {
         message: "Thêm gói tên miền thành công.",
         data: savedPlan
       });
+
     } catch (err) {
       console.error(err);
       return res.status(500).json({
         success: false,
-        message: "Đã xảy ra lỗi khi thêm gói tên miền.",
+        message: "Đã xảy ra lỗi khi thêm gói tên miền.", 
         error: err.message
       });
     }
@@ -80,7 +95,7 @@ const domainPlansController = {
 
   getDetailDomainPlan: async (req, res) => {
     try {
-      const plan = await DomainPlan.findById(req.params.id).populate("supplier", "name company");
+      const plan = await DomainPlan.findById(req.params.id).populate("supplierId", "name company");
 
       if (!plan) {
         return res.status(404).json({
@@ -107,7 +122,10 @@ const domainPlansController = {
   updateDomainPlan: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, extension } = req.body;
+      const { purchasePrice, vat } = req.body;
+      const vatPrice = vat && vat > 0 
+        ? purchasePrice + (purchasePrice * (vat / 100))
+        : 0;
 
       const plan = await DomainPlan.findById(id);
       if (!plan) {
@@ -117,21 +135,11 @@ const domainPlansController = {
         });
       }
 
-      if ((name && name !== plan.name) || (extension && extension !== plan.extension)) {
-        const exists = await DomainPlan.findOne({ name, extension });
-        if (exists && exists._id.toString() !== id) {
-          return res.status(400).json({
-            success: false,
-            message: "Tên miền đã tồn tại! Vui lòng nhập tên khác!"
-          });
-        }
-      }
-
       const updatedPlan = await DomainPlan.findByIdAndUpdate(
         id,
-        { $set: req.body },
+        { $set: { ...req.body, vatPrice } },
         { new: true }
-      ).populate("supplier", "name company");
+      ).populate("supplierId", "name company");
 
       await logAction(req.auth._id, "Gói DV Tên miền", "Cập nhật", `/goi-dich-vu/ten-mien/${id}`);
 

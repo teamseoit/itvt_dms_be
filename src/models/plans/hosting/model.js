@@ -7,42 +7,30 @@ const hostingPlansSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    description: {
+      type: String,
+    },
     purchasePrice: {
       type: Number,
       required: true,
       index: true,
     },
-    retailPrice: {
+    vat: {
       type: Number,
-      required: true,
-      index: true,
+      default: 0,
+      min: 0,
+      max: 100
     },
-    renewalPrice: {
+    vatPrice: {
       type: Number,
-      required: false,
     },
-    registrationYears: {
+    totalPrice: {
       type: Number,
-      default: 1,
     },
-    account: {
-      type: Number,
-      required: true,
-      index: true,
-    },
-    capacity: {
-      type: Number,
-      required: true,
-      index: true,
-    },
-    supplier: {
+    supplierId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceSuppliers",
       required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
     },
   },
   { timestamps: true }

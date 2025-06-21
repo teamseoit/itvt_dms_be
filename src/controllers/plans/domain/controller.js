@@ -65,7 +65,7 @@ const domainPlansController = {
 
       const vatPrice = vat && vat > 0 
         ? purchasePrice + (purchasePrice * (vat / 100))
-        : 0;
+        : purchasePrice;
 
       const domainPlan = {
         ...req.body,
@@ -122,10 +122,7 @@ const domainPlansController = {
   updateDomainPlan: async (req, res) => {
     try {
       const { id } = req.params;
-      const { purchasePrice, vat } = req.body;
-      const vatPrice = vat && vat > 0 
-        ? purchasePrice + (purchasePrice * (vat / 100))
-        : 0;
+      const { vat } = req.body;
 
       const plan = await DomainPlan.findById(id);
       if (!plan) {
@@ -134,6 +131,12 @@ const domainPlansController = {
           message: "Tên miền không tồn tại!"
         });
       }
+
+      const purchasePrice = plan.purchasePrice;
+
+      const vatPrice = vat && vat > 0 
+        ? purchasePrice + (purchasePrice * (vat / 100))
+        : purchasePrice;
 
       const updatedPlan = await DomainPlan.findByIdAndUpdate(
         id,

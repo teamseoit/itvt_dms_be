@@ -13,7 +13,7 @@ const hostingPlansController = {
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate("supplier", "name company"),
+          .populate("supplierId", "name company"),
         HostingPlans.countDocuments()
       ]);
 
@@ -40,7 +40,7 @@ const hostingPlansController = {
 
   addHostingPlans: async (req, res) => {
     try {
-      const { name } = req.body;
+      const { name, purchasePrice, vat } = req.body;
 
       const existingPlan = await HostingPlans.findOne({ name });
       if (existingPlan) {
@@ -50,7 +50,17 @@ const hostingPlansController = {
         });
       }
 
-      const newPlan = new HostingPlans(req.body);
+      const vatPrice = totalPrice = vat && vat > 0 
+        ? purchasePrice + (purchasePrice * (vat / 100))
+        : purchasePrice;
+
+      const hostingPlan = {
+        ...req.body,
+        vatPrice,
+        totalPrice
+      };
+
+      const newPlan = new HostingPlans(hostingPlan);
       const savedPlan = await newPlan.save();
 
       await logAction(req.auth._id, "Gói DV Hosting", "Thêm mới");
@@ -73,7 +83,7 @@ const hostingPlansController = {
   getDetailHostingPlans: async (req, res) => {
     try {
       const plan = await HostingPlans.findById(req.params.id).populate(
-        "supplier",
+        "supplierId",
         "name company"
       );
 
@@ -102,9 +112,10 @@ const hostingPlansController = {
   updateHostingPlans: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name } = req.body;
+      const { name, vat } = req.body;
 
       const plan = await HostingPlans.findById(id);
+
       if (!plan) {
         return res.status(404).json({
           success: false,
@@ -113,8 +124,11 @@ const hostingPlansController = {
       }
 
       if (name && name !== plan.name) {
-        const duplicateName = await HostingPlans.findOne({ name });
-        if (duplicateName && duplicateName._id.toString() !== id) {
+        const duplicateName = await HostingPlans.findOne({ 
+          name,
+          _id: { $ne: id }
+        });
+        if (duplicateName) {
           return res.status(400).json({
             success: false,
             message: "Tên gói hosting đã tồn tại! Vui lòng nhập tên khác!"
@@ -122,11 +136,23 @@ const hostingPlansController = {
         }
       }
 
+      const purchasePrice = plan.purchasePrice;
+
+      const vatPrice = totalPrice = vat && vat > 0 
+        ? purchasePrice + (purchasePrice * (vat / 100))
+        : purchasePrice;
+
       const updatedPlan = await HostingPlans.findByIdAndUpdate(
         id,
-        { $set: req.body },
+        { 
+          $set: { 
+            ...req.body,
+            vatPrice,
+            totalPrice
+          }
+        },
         { new: true }
-      ).populate("supplier", "name company");
+      ).populate("supplierId", "name company");
 
       await logAction(
         req.auth._id,

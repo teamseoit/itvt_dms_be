@@ -8,6 +8,9 @@ const sslPlanSchema = new mongoose.Schema(
       index: true,
       trim: true,
     },
+    description: {
+      type: String,
+    },
     purchasePrice: {
       type: Number,
       required: true,
@@ -18,22 +21,19 @@ const sslPlanSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    renewalPrice: {
+    vat: {
       type: Number,
-      required: true,
-      index: true,
+      default: 0,
+      min: 0,
+      max: 100
     },
-    description: {
-      type: String,
-      default: "",
-      trim: true,
+    totalPurchasePriceWithVAT: { 
+      type: Number,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
-      index: true,
+    totalRetailPriceWithVAT: { 
+      type: Number,
     },
-    supplier: {
+    supplierId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceSuppliers",
       required: true,

@@ -8,6 +8,14 @@ const emailPlanSchema = new mongoose.Schema(
       index: true,
       trim: true,
     },
+    nameAction: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    description: {
+      type: String,
+    },
     purchasePrice: {
       type: Number,
       required: true,
@@ -16,34 +24,25 @@ const emailPlanSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    renewalPrice: {
+    vat: {
       type: Number,
-      required: true,
+      default: 0,
+      min: 0,
+      max: 100
     },
-    accountCount: {
+    totalPurchaseWithoutVAT: {
       type: Number,
-      required: true,
-      min: 1,
     },
-    storagePerAccountGB: {
+    totalPurchaseWithVAT: {
       type: Number,
-      required: true,
-      min: 1,
     },
-    emailFeatures: {
-      type: [String],
-      default: [],
+    totalRetailWithoutVAT: {
+      type: Number,
     },
-    description: {
-      type: String,
-      default: "",
-      trim: true,
+    totalRetailWithVAT: {
+      type: Number,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    supplier: {
+    supplierId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceSuppliers",
       required: true,

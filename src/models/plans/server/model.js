@@ -41,7 +41,7 @@ const serverPlansSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  supplier: {
+  supplierId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServerSuppliers",
     required: true

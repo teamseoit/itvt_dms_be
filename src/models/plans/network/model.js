@@ -34,7 +34,7 @@ const networkPlansSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-  supplier: {
+  supplierId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "NetworkSuppliers",
     required: true,

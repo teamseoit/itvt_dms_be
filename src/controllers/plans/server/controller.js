@@ -13,7 +13,7 @@ const ServerPlansController = {
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate("supplier", "name company"),
+          .populate("supplierId", "name company"),
         ServerPlans.countDocuments()
       ]);
 
@@ -73,7 +73,7 @@ const ServerPlansController = {
   getDetailServerPlans: async (req, res) => {
     try {
       const plan = await ServerPlans.findById(req.params.id).populate(
-        "supplier",
+        "supplierId",
         "name company"
       );
 

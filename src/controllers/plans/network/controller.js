@@ -13,7 +13,7 @@ const networkPlansController = {
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate('supplier'),
+          .populate('supplierId'),
         NetworkPlans.countDocuments()
       ]);
 
@@ -72,7 +72,7 @@ const networkPlansController = {
 
   getDetailNetworkPlans: async (req, res) => {
     try {
-      const plan = await NetworkPlans.findById(req.params.id).populate('supplier');
+      const plan = await NetworkPlans.findById(req.params.id).populate('supplierId');
 
       if (!plan) {
         return res.status(404).json({

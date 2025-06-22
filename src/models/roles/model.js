@@ -178,31 +178,6 @@ const init = async () => {
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
       // end nhà cung cấp
-      
-      // xem hợp đồng
-      {
-        _id: new ObjectId("669653c9e55c5173ec41c93f"),
-        permission_id: new ObjectId("667463d04bede188eee46d7b"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // tạo hợp đồng
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41c93f"),
-      //   permission_id: new ObjectId("667463d04bede188dfb46d7b"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
-      // sửa hợp đồng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c54f"),
-        permission_id: new ObjectId("667463d04bede188dfb4610c"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // xóa hợp đồng
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c941"),
-        permission_id: new ObjectId("667463d04bede188dfb46c7c"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
 
       // gói dịch vụ
         // xem gói tên miền
@@ -568,7 +543,28 @@ const init = async () => {
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
 
-      //backups
+      // hợp đồng
+        // xem hợp đồng
+        {
+          _id: new ObjectId("669653c9e55c5173ec41c93f"),
+          permission_id: new ObjectId("667463d04bede188eee46d7b"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // sửa hợp đồng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c54f"),
+          permission_id: new ObjectId("667463d04bede188dfb4610c"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+        // xóa hợp đồng
+        {
+          _id: new ObjectId("668653c9e55c5173ec41c941"),
+          permission_id: new ObjectId("667463d04bede188dfb46c7c"),
+          group_user_id: new ObjectId("6684196550a34692df218d8d"),
+        },
+      // end hợp đồng
+
+      // backups
         // xem thống kê
         {
           _id: new ObjectId("674153c9e55c5173ec41c9b1"),
@@ -587,6 +583,7 @@ const init = async () => {
           permission_id: new ObjectId("643263d04bede188dfb46d79"),
           group_user_id: new ObjectId("6684196550a34692df218d8d"),
         },
+      // end backups
       
       // ip whitelist
       {

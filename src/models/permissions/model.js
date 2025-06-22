@@ -164,32 +164,6 @@ const init = async () => {
             permission_parent_id: new ObjectId("667463d04bede188dfb46d75"),
             name: "Xóa nhà cung cấp server",
         },
-        
-        // hợp đồng
-        {
-            _id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Hợp đồng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188eee46d7b"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Xem hợp đồng",
-        },
-        // {
-        //     _id: new ObjectId("667463d04bede188dfb46d7b"),
-        //     permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-        //     name: "Tạo hợp đồng",
-        // },
-        {
-            _id: new ObjectId("667463d04bede188dfb4610c"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Sửa hợp đồng",
-        },
-        {
-            _id: new ObjectId("667463d04bede188dfb46c7c"),
-            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
-            name: "Xóa hợp đồng",
-        },
 
         // gói dịch vụ
         {
@@ -563,7 +537,28 @@ const init = async () => {
             name: "Xóa dịch vụ website",
         },
 
-        //backups
+        // hợp đồng
+        {
+            _id: new ObjectId("667463d04bede188dfb46d7a"),
+            name: "Hợp đồng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188eee46d7b"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
+            name: "Xem hợp đồng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb4610c"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
+            name: "Sửa hợp đồng",
+        },
+        {
+            _id: new ObjectId("667463d04bede188dfb46c7c"),
+            permission_parent_id: new ObjectId("667463d04bede188dfb46d7a"),
+            name: "Xóa hợp đồng",
+        },
+
+        // backups
         {
             _id: new ObjectId("666523d04bede188dfb46d75"),
             name: "Sao lưu dữ liệu",
@@ -594,7 +589,7 @@ const init = async () => {
             name: "Xem thống kê",
         },
 
-        // ip white
+        // ip whitelist
         {
             _id: new ObjectId("666523d04bede188dff66d75"),
             name: "IP Whitelist",

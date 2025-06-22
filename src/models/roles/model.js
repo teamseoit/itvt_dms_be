@@ -425,32 +425,33 @@ const init = async () => {
   
     // dịch vụ
       // xem dịch vụ tên miền
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41a991"),
-      //   permission_id: new ObjectId("667467eb263fb998b9925a30"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
-      // // tạo dịch vụ tên miền
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41c993"),
-      //   permission_id: new ObjectId("667467eb263fb998b9925d2e"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
-      // // sửa dịch vụ tên miền
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41c995"),
-      //   permission_id: new ObjectId("667467eb263fb998b9925d2f"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
-      // // xóa dịch vụ tên miền
-      // {
-      //   _id: new ObjectId("668653c9e55c5173ec41c997"),
-      //   permission_id: new ObjectId("667467eb263fb998b9925d30"),
-      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      // },
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a991"),
+        permission_id: new ObjectId("667467eb263fb998b9925a30"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ tên miền
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c994"),
+        permission_id: new ObjectId("667467eb263fb998b9925d2e"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ tên miền
+      {
+        _id: new ObjectId("668653c9e55c5173ec41d995"),
+        permission_id: new ObjectId("667467eb263fb998b9925d2f"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ tên miền
+      {
+        _id: new ObjectId("668653c9e55c5173ec41d997"),
+        permission_id: new ObjectId("667467eb263fb998b9925d30"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
 
 
 
+      
 
       //Tạo dịch vụ viết bài content & PR
       {

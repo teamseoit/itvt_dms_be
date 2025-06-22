@@ -17,18 +17,18 @@ const domainServicesSchema = new mongoose.Schema(
       type: String,
       default: "năm",
     },
-    customer: {
+    customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customers",
       required: true,
       index: true,
     },
-    domainPlan: {
+    domainPlanId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DomainPlans",
       default: null,
     },
-    serverPlan: {
+    serverPlanId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServerPlans",
       default: null,
@@ -36,10 +36,6 @@ const domainServicesSchema = new mongoose.Schema(
     vatIncluded: {
       type: Boolean,
       default: false,
-    },
-    totalPrice: {
-      type: Number,
-      min: 0,
     },
     registeredAt: {
       type: Date,
@@ -53,7 +49,7 @@ const domainServicesSchema = new mongoose.Schema(
     },
     status: {
       type: Number,
-      enum: [1, 2, 3], // 1: Hoạt động, 2: Sắp hết hạn, 3: Hết hạn
+      enum: [1, 2, 3],
       default: 1,
     },
     daysUntilExpiry: {
@@ -63,76 +59,5 @@ const domainServicesSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-domainServicesSchema.pre("validate", async function (next) {
-  try {
-    if (this.domainPlan) {
-      const DomainPlan = mongoose.model("DomainPlans");
-      const plan = await DomainPlan.findById(this.domainPlan).lean();
-
-      if (plan && plan.retailPrice && this.periodValue) {
-        this.totalPrice = plan.retailPrice * this.periodValue;
-      }
-    }
-
-    // Tính expiredAt nếu có registeredAt
-    if (this.registeredAt && this.periodValue && this.periodUnit) {
-      const unitMap = {
-        "năm": "year",
-      };
-
-      const unitForDayjs = unitMap[this.periodUnit];
-      if (unitForDayjs) {
-        this.expiredAt = dayjs(this.registeredAt)
-          .add(this.periodValue, unitForDayjs)
-          .toDate();
-      }
-    }
-
-    // Tự động cập nhật status và daysUntilExpiry dựa trên expiredAt
-    if (this.expiredAt) {
-      const currentDate = dayjs();
-      const expiryDate = dayjs(this.expiredAt);
-      const daysUntilExpiry = expiryDate.diff(currentDate, 'day');
-
-      this.daysUntilExpiry = daysUntilExpiry;
-
-      if (daysUntilExpiry < 0) {
-        // Đã hết hạn
-        this.status = 3;
-      } else if (daysUntilExpiry <= 30) {
-        // Sắp hết hạn (trong vòng 30 ngày)
-        this.status = 2;
-      } else {
-        // Còn hạn
-        this.status = 1;
-      }
-    }
-
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Middleware để cập nhật status và daysUntilExpiry trước khi save
-domainServicesSchema.pre("save", function (next) {
-  if (this.expiredAt) {
-    const currentDate = dayjs();
-    const expiryDate = dayjs(this.expiredAt);
-    const daysUntilExpiry = expiryDate.diff(currentDate, 'day');
-
-    this.daysUntilExpiry = daysUntilExpiry;
-
-    if (daysUntilExpiry < 0) {
-      this.status = 3;
-    } else if (daysUntilExpiry <= 30) {
-      this.status = 2;
-    } else {
-      this.status = 1;
-    }
-  }
-  next();
-});
 
 module.exports = mongoose.model("DomainServices", domainServicesSchema);

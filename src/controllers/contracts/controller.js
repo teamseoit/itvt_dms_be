@@ -7,18 +7,65 @@ const contractController = {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
-  
+
+      const searchQuery = {};
+      
+      if (req.query.keyword) {
+        const normalizedKeyword = req.query.keyword.toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+
+        const [contracts, total] = await Promise.all([
+          Contracts.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate({
+              path: "customer",
+              select: "fullName gender email phoneNumber"
+            }),
+          Contracts.countDocuments(searchQuery)
+        ]);
+
+        const filteredContracts = contracts.filter(contract => {
+          const contractCodeMatch = contract.contractCode?.toLowerCase().includes(req.query.keyword.toLowerCase());
+          
+          const customerNameMatch = contract.customer?.fullName
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .includes(normalizedKeyword);
+
+          return contractCodeMatch || customerNameMatch;
+        });
+        
+        const filteredTotal = filteredContracts.length;
+        const totalPages = Math.ceil(filteredTotal / limit);
+
+        return res.status(200).json({
+          success: true,
+          message: "Lấy danh sách hợp đồng thành công.",
+          data: filteredContracts,
+          meta: {
+            page,
+            limit,
+            totalDocs: filteredTotal,
+            totalPages,
+          },
+        });
+      }
+
       const [contracts, total] = await Promise.all([
-        Contracts.find()
+        Contracts.find(searchQuery)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate("customer"),
-        Contracts.countDocuments()
+          .populate("customer", "fullName gender email phoneNumber"),
+        Contracts.countDocuments(searchQuery)
       ]);
-  
+
       const totalPages = Math.ceil(total / limit);
-  
+
       return res.status(200).json({
         success: true,
         message: "Lấy danh sách hợp đồng thành công.",

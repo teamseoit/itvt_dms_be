@@ -25,18 +25,54 @@ const contractSchema = new mongoose.Schema(
       serviceModel: {
         type: String,
         enum: ['DomainServices']
+      },
+      price: {
+        type: Number,
+        default: 0
       }
     }],
+    financials: {
+      totalAmount: {
+        type: Number,
+        default: 0
+      },
+      amountPaid: {
+        type: Number,
+        default: 0
+      },
+      amountRemaining: {
+        type: Number,
+        default: 0
+      },
+      isFullyPaid: {
+        type: Boolean,
+        default: false
+      }
+    },
     note: { type: String },
     createdBy: { type: String }
   },
   { timestamps: true }
 );
 
-contractSchema.pre('save', function(next) {
-  if (!this.contractCode) {
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.contractCode = `HD_${random}`;
+contractSchema.pre('save', async function(next) {
+  if (!this.contractCode || this.contractCode === null) {
+    let contractCode;
+    let isUnique = false;
+    
+    // Tạo contractCode duy nhất
+    while (!isUnique) {
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      contractCode = `HD_${random}`;
+      
+      // Kiểm tra xem contractCode đã tồn tại chưa
+      const existingContract = await this.constructor.findOne({ contractCode });
+      if (!existingContract) {
+        isUnique = true;
+      }
+    }
+    
+    this.contractCode = contractCode;
   }
   next();
 });
@@ -48,13 +84,25 @@ contractSchema.statics.create_or_update_contract = async function(customerId) {
     if (!contract) {
       contract = new this({
         customer: customerId,
-        services: []
+        services: [],
+        financials: {
+          totalAmount: 0,
+          amountPaid: 0,
+          amountRemaining: 0,
+          isFullyPaid: false
+        }
       });
     }
 
     const services = await this.getCustomerServices(customerId);
     
+    // Tính tổng tiền từ tất cả services
+    const totalAmount = services.reduce((sum, service) => sum + (service.price || 0), 0);
+    
     contract.services = services;
+    contract.financials.totalAmount = totalAmount;
+    contract.financials.amountRemaining = totalAmount - contract.financials.amountPaid;
+    contract.financials.isFullyPaid = contract.financials.amountPaid >= totalAmount;
     
     await contract.save();
     return contract;
@@ -69,20 +117,69 @@ contractSchema.statics.getCustomerServices = async function(customerId) {
   
   const DomainServices = require('../services/domain/model');
 
-  const domainServices = await DomainServices.find({ customerId: customerId }).populate('domainPlanId');
+  const domainServices = await DomainServices.find({ customerId: customerId });
   domainServices.forEach(service => {
-    let price = 0;
-    if (service.domainPlanId && service.domainPlanId.totalPrice) {
-      price = service.domainPlanId.totalPrice;
-    }
     services.push({
       serviceType: 'domain',
       serviceId: service._id,
       serviceModel: 'DomainServices',
-      price: price
+      price: service.totalPrice || 0
     });
   });
   return services;
+};
+
+contractSchema.statics.recalculateFinancials = async function(customerId) {
+  try {
+    const contract = await this.findOne({ customer: customerId });
+    if (!contract) {
+      // Nếu chưa có contract, tạo mới
+      return await this.create_or_update_contract(customerId);
+    }
+
+    const services = await this.getCustomerServices(customerId);
+    const totalAmount = services.reduce((sum, service) => sum + (service.price || 0), 0);
+    
+    contract.services = services;
+    contract.financials.totalAmount = totalAmount;
+    contract.financials.amountRemaining = totalAmount - contract.financials.amountPaid;
+    contract.financials.isFullyPaid = contract.financials.amountPaid >= totalAmount;
+    
+    await contract.save();
+    return contract;
+  } catch (error) {
+    console.error('Error recalculating financials:', error);
+    throw error;
+  }
+};
+
+contractSchema.statics.fixNullContractCodes = async function() {
+  try {
+    const contractsWithNullCode = await this.find({ contractCode: null });
+    
+    for (const contract of contractsWithNullCode) {
+      let contractCode;
+      let isUnique = false;
+      
+      while (!isUnique) {
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        contractCode = `HD_${random}`;
+        
+        const existingContract = await this.findOne({ contractCode });
+        if (!existingContract) {
+          isUnique = true;
+        }
+      }
+      
+      contract.contractCode = contractCode;
+      await contract.save();
+    }
+    
+    console.log(`Fixed ${contractsWithNullCode.length} contracts with null contractCode`);
+  } catch (error) {
+    console.error('Error fixing null contract codes:', error);
+    throw error;
+  }
 };
 
 module.exports = mongoose.model("Contracts", contractSchema);

@@ -1,5 +1,7 @@
 const dayjs = require('dayjs');
+const DomainPlans = require("../../../models/plans/domain/model");
 const DomainServices = require("../../../models/services/domain/model");
+const Contracts = require("../../../models/contracts/model");
 const logAction = require("../../../middleware/actionLogs");
 const {
   calculateDaysUntilExpiry,
@@ -22,7 +24,7 @@ const domainServicesController = {
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate('domainPlanId', 'name extension purchasePrice retailPrice renewalPrice')
+          .populate('domainPlanId', 'name extension')
           .populate('serverPlanId', 'name ipAddress')
           .populate('customerId', 'fullName phoneNumber')
           .lean(),
@@ -55,7 +57,7 @@ const domainServicesController = {
 
   addDomainServices: async (req, res) => {
     try {
-      const { name, registeredAt, periodValue } = req.body;
+      const { name, registeredAt, periodValue, domainPlanId, vatIncluded } = req.body;
 
       const exists = await DomainServices.findOne({ name });
       if (exists) {
@@ -65,6 +67,18 @@ const domainServicesController = {
         });
       }
 
+      const plan = await DomainPlans.findById(domainPlanId);
+      let retailPrice = 0;
+      let vatPrice = 0;
+
+      if (domainPlanId && plan) {
+        retailPrice = plan.retailPrice;
+        vatPrice = vatIncluded ? plan.vatPrice : plan.purchasePrice;
+      }
+
+      const totalPrice = retailPrice * periodValue;
+      vatPrice = vatPrice * periodValue;
+
       const expiredAt = dayjs(registeredAt).add(periodValue, 'year').toDate();
       const daysUntilExpiry = calculateDaysUntilExpiry(expiredAt);
       const status = determineStatus(daysUntilExpiry);
@@ -72,8 +86,13 @@ const domainServicesController = {
       const newDomain = await DomainServices.create({
         ...req.body,
         expiredAt,
-        status
+        status,
+        totalPrice,
+        vatPrice
       });
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(newDomain.customerId);
 
       await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Thêm mới');
 
@@ -161,6 +180,9 @@ const domainServicesController = {
       const daysUntilExpiry = calculateDaysUntilExpiry(domain.expiredAt);
       domain.status = determineStatus(daysUntilExpiry);
       await domain.save();
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(domain.customerId);
 
       await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Cập nhật', `/dich-vu/ten-mien/${req.params.id}`);
 

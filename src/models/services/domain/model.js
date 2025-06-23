@@ -56,17 +56,16 @@ const domainServicesSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    totalPrice: {
+      type: Number,
+      default: 0,
+    },
+    vatPrice: {
+      type: Number,
+      default: 0,
+    }
   },
   { timestamps: true }
 );
-
-domainServicesSchema.post(['save','updateOne','create'], async function (next) {
-  const ModelContract = require('../../contracts/model');
-  if (this.customerId) {
-    ModelContract.create_or_update_contract(this.customerId);
-  } else if (this['$set']?.customerId) {
-    ModelContract.create_or_update_contract(this['$set']?.customerId);
-  }
-});
 
 module.exports = mongoose.model("DomainServices", domainServicesSchema);

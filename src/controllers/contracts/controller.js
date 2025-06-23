@@ -1,68 +1,39 @@
 const Contracts = require("../../models/contracts/model");
 const logAction = require("../../middleware/actionLogs");
 
+const normalizeText = (text) =>
+  text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 const contractController = {
   getContracts: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
+      const keyword = req.query.keyword?.trim() || null;
 
-      const searchQuery = {};
-      
-      if (req.query.keyword) {
-        const normalizedKeyword = req.query.keyword.toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
+      const contractsQuery = Contracts.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("customer", "fullName gender email phoneNumber")
+        .populate("services.serviceId");
 
-        const [contracts, total] = await Promise.all([
-          Contracts.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate({
-              path: "customer",
-              select: "fullName gender email phoneNumber"
-            }),
-          Contracts.countDocuments(searchQuery)
-        ]);
+      const totalQuery = Contracts.countDocuments();
 
-        const filteredContracts = contracts.filter(contract => {
-          const contractCodeMatch = contract.contractCode?.toLowerCase().includes(req.query.keyword.toLowerCase());
-          
-          const customerNameMatch = contract.customer?.fullName
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .includes(normalizedKeyword);
+      let [contracts, total] = await Promise.all([contractsQuery, totalQuery]);
 
+      if (keyword) {
+        const normalizedKeyword = normalizeText(keyword);
+
+        contracts = contracts.filter(contract => {
+          const contractCodeMatch = contract.contractCode?.toLowerCase().includes(keyword.toLowerCase());
+          const customerNameMatch = normalizeText(contract.customer?.fullName || "").includes(normalizedKeyword);
           return contractCodeMatch || customerNameMatch;
         });
-        
-        const filteredTotal = filteredContracts.length;
-        const totalPages = Math.ceil(filteredTotal / limit);
 
-        return res.status(200).json({
-          success: true,
-          message: "Lấy danh sách hợp đồng thành công.",
-          data: filteredContracts,
-          meta: {
-            page,
-            limit,
-            totalDocs: filteredTotal,
-            totalPages,
-          },
-        });
+        total = contracts.length;
       }
-
-      const [contracts, total] = await Promise.all([
-        Contracts.find(searchQuery)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .populate("customer", "fullName gender email phoneNumber"),
-        Contracts.countDocuments(searchQuery)
-      ]);
 
       const totalPages = Math.ceil(total / limit);
 
@@ -96,10 +67,10 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
-      res.status(200).json({ success: true, data: contract });
+      return res.status(200).json({ success: true, data: contract });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: err.message });
+      console.error("Error getting contract by ID:", err);
+      return res.status(500).json({ success: false, message: "Lỗi máy chủ." });
     }
   },
 
@@ -110,12 +81,12 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
-      const total = contract.financials.grandTotal;
+      const total = contract.financials.totalAmount;
       const currentPaid = contract.financials.amountPaid;
       const addPayment = Number(req.body.amountPaid || 0);
       const newPaid = currentPaid + addPayment;
 
-      let updateData = {
+      const updateData = {
         ...req.body,
         financials: {
           ...contract.financials,
@@ -128,22 +99,33 @@ const contractController = {
       await contract.updateOne({ $set: updateData });
       await logAction(req.auth._id, "Hợp đồng", "Cập nhật", `/hop-dong/${req.params.id}`);
 
-      res.status(200).json({ success: true, message: "Cập nhật thành công!" });
+      return res.status(200).json({ 
+        success: true, 
+        message: "Cập nhật thành công!",
+        data: {
+          ...contract.toObject(),
+          ...updateData
+        }
+      });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: err.message });
+      console.error("Error updating contract:", err);
+      return res.status(500).json({ success: false, message: "Lỗi máy chủ." });
     }
   },
 
   deleteContract: async (req, res) => {
     try {
-      await Contracts.findByIdAndDelete(req.params.id);
+      const deleted = await Contracts.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
+      }
+
       await logAction(req.auth._id, "Hợp đồng", "Xóa");
 
-      res.status(200).json({ success: true, message: "Xóa thành công!" });
+      return res.status(200).json({ success: true, message: "Xóa thành công!" });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: err.message });
+      console.error("Error deleting contract:", err);
+      return res.status(500).json({ success: false, message: "Lỗi máy chủ." });
     }
   },
 };

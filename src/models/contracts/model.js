@@ -153,33 +153,4 @@ contractSchema.statics.recalculateFinancials = async function(customerId) {
   }
 };
 
-contractSchema.statics.fixNullContractCodes = async function() {
-  try {
-    const contractsWithNullCode = await this.find({ contractCode: null });
-    
-    for (const contract of contractsWithNullCode) {
-      let contractCode;
-      let isUnique = false;
-      
-      while (!isUnique) {
-        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        contractCode = `HD_${random}`;
-        
-        const existingContract = await this.findOne({ contractCode });
-        if (!existingContract) {
-          isUnique = true;
-        }
-      }
-      
-      contract.contractCode = contractCode;
-      await contract.save();
-    }
-    
-    console.log(`Fixed ${contractsWithNullCode.length} contracts with null contractCode`);
-  } catch (error) {
-    console.error('Error fixing null contract codes:', error);
-    throw error;
-  }
-};
-
 module.exports = mongoose.model("Contracts", contractSchema);

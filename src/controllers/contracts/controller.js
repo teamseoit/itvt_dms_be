@@ -81,18 +81,22 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
+      const { amountPaid } = req.body;
+      if (!amountPaid) {
+        return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán." });
+      }
+
       const total = contract.financials.totalAmount;
-      const currentPaid = contract.financials.amountPaid;
-      const addPayment = Number(req.body.amountPaid || 0);
-      const newPaid = currentPaid + addPayment;
+      const newPaid = amountPaid;
+      const amountRemaining = total - newPaid;
+      const isFullyPaid = newPaid >= total;
 
       const updateData = {
-        ...req.body,
         financials: {
           ...contract.financials,
           amountPaid: newPaid,
-          amountRemaining: total - newPaid,
-          isFullyPaid: newPaid >= total,
+          amountRemaining,
+          isFullyPaid,
         },
       };
 

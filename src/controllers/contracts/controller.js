@@ -1,5 +1,6 @@
 const Contracts = require("../../models/contracts/model");
 const logAction = require("../../middleware/actionLogs");
+const { populateDomainServiceForHosting, populateHostingPlanForDomain } = require("../../utils/contractUtils");
 
 const normalizeText = (text) =>
   text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -67,6 +68,9 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
+      await populateDomainServiceForHosting([contract]);
+      await populateHostingPlanForDomain([contract]);
+
       return res.status(200).json({ success: true, data: contract });
     } catch (err) {
       console.error("Error getting contract by ID:", err);
@@ -86,10 +90,10 @@ const contractController = {
         return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán." });
       }
 
-      const total = contract.financials.totalAmount;
+      const total = Math.round(contract.financials.totalAmount);
       const newPaid = amountPaid;
       const amountRemaining = total - newPaid;
-      const isFullyPaid = newPaid >= total;
+      const isFullyPaid = (newPaid == total) ? true : false;
 
       const updateData = {
         financials: {

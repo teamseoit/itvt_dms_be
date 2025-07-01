@@ -1,34 +1,34 @@
 const mongoose = require("mongoose");
 
 const hostingServicesSchema = new mongoose.Schema({
-  domain_service_id: {
+  domainServiceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "DomainServices"
   },
-  hosting_plan_id: {
+  hostingPlanId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "HostingPlans"
   },
-  periods: {
-    type: Number,
-    required: true
-  },
-  customer_id: {
+  customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customers",
     index: true
   },
+  periodValue: {
+    type: Number,
+    required: true
+  },
+  periodUnit: {
+    type: String,
+    default: "năm",
+  },
+  vatIncluded: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: Number,
     default: 1
-  },
-  before_payment: {
-    type: Boolean,
-    default: false
-  },
-  after_payment: {
-    type: Boolean,
-    default: false
   },
   registeredAt: {
     type: Date
@@ -36,28 +36,19 @@ const hostingServicesSchema = new mongoose.Schema({
   expiredAt: {
     type: Date
   },
-  domain_plan_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "DomainPlans"
+  daysUntilExpiry: {
+    type: Number,
+    default: null,
   },
-  domain_supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
+  totalPrice: {
+    type: Number,
+    default: 0,
   },
-  hosting_supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
-  },
-}, {timestamps: true});
-
-hostingServicesSchema.post(['save','updateOne','create'], async function (next) {
-  const ModelContract = require('../../contracts/model');
-  if (this.customer_id) {
-    ModelContract.create_or_update_contract(this.customer_id);
-  } else if (this['$set']?.customer_id) {
-    ModelContract.create_or_update_contract(this['$set']?.customer_id);
+  vatPrice: {
+    type: Number,
+    default: 0,
   }
-});
+}, {timestamps: true});
 
 let HostingServices = mongoose.model("HostingServices", hostingServicesSchema);
 module.exports = HostingServices;

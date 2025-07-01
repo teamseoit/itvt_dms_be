@@ -169,6 +169,13 @@ const domainServicesController = {
             .toDate();
         }
         domain.periodValue = req.body.periodValue;
+        const plan = await DomainPlans.findById(domain.domainPlanId);
+        domain.totalPrice = plan.retailPrice * req.body.periodValue;
+        if (req.body.vatIncluded) {
+          domain.vatPrice = plan.vatPrice * req.body.periodValue;
+        } else {
+          domain.vatPrice = plan.purchasePrice * req.body.periodValue;
+        }
       }
 
       Object.keys(req.body).forEach(key => {

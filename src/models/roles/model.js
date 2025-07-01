@@ -423,7 +423,30 @@ const init = async () => {
         permission_id: new ObjectId("667467eb263fb998b9925d30"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-
+      // xem dịch vụ hosting
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a993"),
+        permission_id: new ObjectId("667467eb263fb998b9925a33"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ hosting
+      {
+        _id: new ObjectId("668653c9e55c5173ec41d999"),
+        permission_id: new ObjectId("667467eb263fb998b9925d31"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ hosting
+      {
+        _id: new ObjectId("668653c9e55c5173ec41d99b"),
+        permission_id: new ObjectId("667467eb263fb998b9925d32"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ hosting
+      {
+        _id: new ObjectId("668653c9e55c5173ec41d99d"),
+        permission_id: new ObjectId("667467eb263fb998b9925d33"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
 
 
       

@@ -1,271 +1,238 @@
 const dayjs = require('dayjs');
-
+const HostingPlans = require("../../../models/plans/hosting/model");
 const HostingServices = require("../../../models/services/hosting/model");
+const Contracts = require("../../../models/contracts/model");
 const logAction = require("../../../middleware/actionLogs");
+const {
+  calculateDaysUntilExpiry,
+  determineStatus,
+  getStatusText
+} = require("../../../utils/serviceUtils");
 
 const hostingServicesController = {
-  addHostingServices: async(req, res) => {
+  getHostingServices: async(req, res) => {
     try {
-      const {domain_service_id} = req.body;
-      const existingDomainName = await HostingServices.findOne({domain_service_id});
-      if (existingDomainName) {
-        return res.status(400).json({message: 'Tên miền đăng ký đã tồn tại! Vui lòng chọn tên miền khác!'});
-      }
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const keyword = req.query.keyword || '';
 
-      const newHostingServices = new HostingServices(req.body);
-      newHostingServices.expiredAt = new Date(newHostingServices.registeredAt);
-      newHostingServices.expiredAt.setFullYear(newHostingServices.expiredAt.getFullYear() + req.body.periods);
-      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Thêm mới');
-      const saveHostingServices = await newHostingServices.save();
-      return res.status(200).json(saveHostingServices);
+      const filter = keyword ? { name: { $regex: keyword, $options: 'i' } } : {};
+
+      const [hostingServices, total] = await Promise.all([
+        HostingServices.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('domainServiceId', 'name')
+          .populate('hostingPlanId', 'name')
+          .populate('customerId', 'fullName phoneNumber')
+          .lean(),
+        HostingServices.countDocuments(filter)
+      ]);
+
+      const updatedHostingServices = hostingServices.map(hosting => {
+        const daysUntilExpiry = calculateDaysUntilExpiry(hosting.expiredAt);
+        const statusText = getStatusText(hosting.status, daysUntilExpiry);
+        return { ...hosting, daysUntilExpiry, statusText };
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách dịch vụ hosting thành công.",
+        data: updatedHostingServices,
+        meta: {
+          page, limit, totalDocs: total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error getting hosting services:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách dịch vụ hosting."
+      });
     }
   },
 
-  getHostingServices: async(req, res) => {
+  addHostingServices: async(req, res) => {
     try {
-      let hostingServices = await HostingServices
-        .find()
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('hosting_plan_id');
-      
-      for (const item of hostingServices) {
-        const domain_plan_id = item.domain_service_id.domain_plan_id;
-        const domain_supplier_id = item.domain_service_id.supplier_id;
-        const hosting_supplier_id = item.hosting_plan_id.supplier_id;
+      const { domainServiceId, hostingPlanId, customerId, periodValue, periodUnit, vatIncluded, registeredAt } = req.body;
 
-        try {
-          hostingServices = await HostingServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                domain_plan_id: domain_plan_id,
-                domain_supplier_id: domain_supplier_id,
-                hosting_supplier_id: hosting_supplier_id,
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
-        }
+      const exists = await HostingServices.findOne({ domainServiceId });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên miền đã được đăng ký! Vui lòng chọn tên miền khác!"
+        });
       }
 
-      hostingServices = await HostingServices.find().sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('hosting_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('hosting_supplier_id', 'name company');
-      
-      return res.status(200).json(hostingServices);
+      const plan = await HostingPlans.findById(hostingPlanId);
+      let totalPrice = 0;
+      let vatPrice = 0;
+
+      if (hostingPlanId && plan) {
+        totalPrice = plan.totalPrice * periodValue;
+        vatPrice = vatIncluded ? plan.vatPrice * periodValue : plan.purchasePrice * periodValue;
+      }
+
+      const expiredAt = dayjs(registeredAt).add(periodValue, 'year').toDate();
+      const daysUntilExpiry = calculateDaysUntilExpiry(expiredAt);
+      const status = determineStatus(daysUntilExpiry);
+
+      const newHostingServices = new HostingServices({
+        ...req.body,
+        totalPrice,
+        vatPrice,
+        registeredAt,
+        expiredAt,
+        daysUntilExpiry,
+        status
+      });
+
+      await newHostingServices.save();
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(newHostingServices.customerId);
+
+      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Thêm mới');
+      return res.status(201).json({
+        success: true,
+        message: "Thêm dịch vụ hosting thành công.",
+        data: {
+          ...newHostingServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error creating hosting service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi thêm dịch vụ hosting."
+      });
     }
   },
 
   getDetailHostingServices: async(req, res) => {
     try {
-      const hostingServices = await HostingServices.findById(req.params.id)
-        .populate('domain_service_id')
-        .populate('hosting_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('hosting_supplier_id', 'name company');
-      
-      return res.status(200).json(hostingServices);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
+      const hostingServices = await HostingServices.findById(req.params.id);
+      if (!hostingServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ hosting."
+        });
+      }
+      const daysUntilExpiry = calculateDaysUntilExpiry(hostingServices.expiredAt);
 
-  deleteHostingServices: async(req, res) => {
-    try {
-      await HostingServices.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết dịch vụ hosting thành công.",
+        data: {
+          ...hostingServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(hostingServices.status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error getting hosting service detail:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy chi tiết dịch vụ hosting."
+      });
     }
   },
 
   updateHostingServices: async(req, res) => {
     try {
       const hostingServices = await HostingServices.findById(req.params.id);
-      if (req.body.periods) {
-        const currentDate = new Date();
-        const expiredAt = currentDate.setFullYear(currentDate.getFullYear() + req.body.periods);
-        await hostingServices.updateOne({$set: {expiredAt: expiredAt, status: 1}});
+      if (!hostingServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ hosting để cập nhật."
+        });
       }
 
-      if (req.body.before_payment) {
-        await hostingServices.updateOne({$set: {before_payment: true}});
-      }
-      
-      await hostingServices.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Cập nhật', `/trang-chu/dich-vu/cap-nhat-hosting/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getHostingServicesExpired: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var hostingServicesExpired = await HostingServices.find(
-        {
-          expiredAt: {$lte: currentDate}
+      if (req.body.periodValue) {
+        if (req.body.expiredAt) {
+          hostingServices.expiredAt = dayjs(new Date(req.body.expiredAt))
+            .add(req.body.periodValue, 'year')
+            .toDate();
+        } else {
+          const startDate = hostingServices.expiredAt && hostingServices.status !== 3
+            ? hostingServices.expiredAt
+            : new Date();
+          hostingServices.expiredAt = dayjs(startDate)
+            .add(req.body.periodValue, 'year')
+            .toDate();
         }
-      );
+        hostingServices.periodValue = req.body.periodValue;
 
-      for (const item of hostingServicesExpired) {
-        try {
-          hostingServicesExpired = await HostingServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 3
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+        const plan = await HostingPlans.findById(hostingServices.hostingPlanId);
+        hostingServices.totalPrice = plan.totalPrice * req.body.periodValue;
+
+        if (req.body.vatIncluded) {
+          hostingServices.vatPrice = plan.vatPrice * req.body.periodValue;
+        } else {
+          hostingServices.vatPrice = plan.purchasePrice * req.body.periodValue;
         }
       }
 
-      hostingServicesExpired = await HostingServices
-        .find(
-          {
-            expiredAt: {$lte: currentDate}
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('hosting_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('hosting_supplier_id', 'name company');
-      
-      return res.status(200).json(hostingServicesExpired);
+      Object.keys(req.body).forEach(key => {
+        if (key !== 'periodValue' && key !== 'expiredAt') {
+          hostingServices[key] = req.body[key];
+        }
+      });
+
+      const daysUntilExpiry = calculateDaysUntilExpiry(hostingServices.expiredAt);
+      hostingServices.status = determineStatus(daysUntilExpiry);
+      await hostingServices.save();
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(hostingServices.customerId);
+
+      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Cập nhật', `/dich-vu/hosting/${req.params.id}`);
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật dịch vụ hosting thành công.",
+        data: {
+          ...hostingServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(hostingServices.status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error updating hosting service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi cập nhật dịch vụ hosting."
+      });
     }
   },
 
-  getHostingServicesExpiring: async(req, res) => {
+  deleteHostingServices: async(req, res) => {
     try {
-      var currentDate = new Date();
-      var dateExpired = dayjs(currentDate).add(30, 'day');
-      var hostingServicesExpiring = await HostingServices.find(
-        {
-          expiredAt: {
-            $gte: dayjs(currentDate).startOf('day').toDate(),
-            $lte: dayjs(dateExpired).endOf('day').toDate()
-          }
-        }
-      );
-
-      for (const item of hostingServicesExpiring) {
-        try {
-          hostingServicesExpiring = await HostingServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 2
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
-        }
+      const deleted = await HostingServices.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ hosting để xóa."
+        });
       }
 
-      hostingServicesExpiring = await HostingServices
-        .find(
-          {
-            expiredAt: {
-              $gte: dayjs(currentDate).startOf('day').toDate(),
-              $lte: dayjs(dateExpired).endOf('day').toDate()
-            }
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('hosting_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('hosting_supplier_id', 'name company');
-      
-      return res.status(200).json(hostingServicesExpiring);
+      await logAction(req.auth._id, 'Dịch vụ Hosting', 'Xóa');
+      return res.status(200).json({
+        success: true,
+        message: "Xóa dịch vụ hosting thành công."
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error deleting hosting service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi xóa dịch vụ hosting."
+      });
     }
   },
-
-  getHostingServicesBeforePayment: async(req, res) => {
-    try {
-      const hostingServicesBeforePayment = await HostingServices
-        .find(
-          {
-            before_payment: true
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('hosting_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('hosting_supplier_id', 'name company');
-      
-      return res.status(200).json(hostingServicesBeforePayment);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-  
-  getHostingServicesByCustomerId: async(req, res) => {
-    try {
-      const customer_id = req.params.customer_id;
-      const hosting_services = await HostingServices
-      .find(
-        {
-          customer_id: customer_id
-        }
-      )
-      .sort({"createdAt": -1})
-      .populate('domain_service_id')
-      .populate('hosting_plan_id')
-      .populate('domain_plan_id')
-      .populate('domain_supplier_id', 'name company')
-      .populate('hosting_supplier_id', 'name company');
-    
-    return res.status(200).json(hosting_services);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  }
 }
 
 module.exports = hostingServicesController;

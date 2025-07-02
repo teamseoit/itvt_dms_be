@@ -89,12 +89,17 @@ const contractController = {
       }
 
       const { amountPaid, paymentMethod, paymentNote } = req.body;
-      if (!amountPaid) {
-        return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán." });
+      if (typeof amountPaid !== 'number') {
+        return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán hợp lệ." });
       }
 
+      const prevPaid = contract.financials.amountPaid || 0;
       const total = Math.round(contract.financials.totalAmount);
       const newPaid = amountPaid;
+      const paymentThisTime = newPaid - prevPaid;
+      if (paymentThisTime < 0) {
+        return res.status(400).json({ success: false, message: "Số tiền thanh toán không hợp lệ (không được nhỏ hơn số đã thanh toán trước đó)." });
+      }
       const amountRemaining = total - newPaid;
       const isFullyPaid = (newPaid == total) ? true : false;
 
@@ -107,14 +112,15 @@ const contractController = {
         },
       };
 
-      // Lưu lịch sử thanh toán
-      await ContractPaymentHistory.create({
-        contractId: contract._id,
-        amount: amountPaid,
-        method: paymentMethod || 'Chuyển khoản',
-        note: paymentNote || '',
-        createdBy: req.auth?.username || req.auth?._id || 'system'
-      });
+      if (paymentThisTime > 0) {
+        await ContractPaymentHistory.create({
+          contractId: contract._id,
+          amount: paymentThisTime,
+          method: paymentMethod || 'Chuyển khoản',
+          note: paymentNote || '',
+          createdBy: req.auth?.username || req.auth?._id || 'system'
+        });
+      }
 
       await contract.updateOne({ $set: updateData });
       await logAction(req.auth._id, "Hợp đồng", "Cập nhật", `/hop-dong/${req.params.id}`);

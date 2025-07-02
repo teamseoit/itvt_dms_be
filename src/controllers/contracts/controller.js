@@ -1,6 +1,7 @@
 const Contracts = require("../../models/contracts/model");
 const logAction = require("../../middleware/actionLogs");
 const { populateDomainServiceForHosting, populateHostingPlanForDomain, populateSslPlanForDomain, populateEmailPlanForDomain } = require("../../utils/contractUtils");
+const ContractPaymentHistory = require("../../models/contracts/paymentHistory");
 
 const normalizeText = (text) =>
   text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -87,7 +88,7 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
-      const { amountPaid } = req.body;
+      const { amountPaid, paymentMethod, paymentNote } = req.body;
       if (!amountPaid) {
         return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán." });
       }
@@ -105,6 +106,15 @@ const contractController = {
           isFullyPaid,
         },
       };
+
+      // Lưu lịch sử thanh toán
+      await ContractPaymentHistory.create({
+        contractId: contract._id,
+        amount: amountPaid,
+        method: paymentMethod || 'Chuyển khoản',
+        note: paymentNote || '',
+        createdBy: req.auth?.username || req.auth?._id || 'system'
+      });
 
       await contract.updateOne({ $set: updateData });
       await logAction(req.auth._id, "Hợp đồng", "Cập nhật", `/hop-dong/${req.params.id}`);
@@ -135,6 +145,20 @@ const contractController = {
       return res.status(200).json({ success: true, message: "Xóa thành công!" });
     } catch (err) {
       console.error("Error deleting contract:", err);
+      return res.status(500).json({ success: false, message: "Lỗi máy chủ." });
+    }
+  },
+
+  getPaymentHistory: async (req, res) => {
+    try {
+      const contractId = req.params.id;
+      const history = await ContractPaymentHistory.find({ contractId }).sort({ paymentDate: -1 });
+      return res.status(200).json({
+        success: true,
+        data: history
+      });
+    } catch (err) {
+      console.error("Error fetching payment history:", err);
       return res.status(500).json({ success: false, message: "Lỗi máy chủ." });
     }
   },

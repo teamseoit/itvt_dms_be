@@ -15,7 +15,7 @@ const contractSchema = new mongoose.Schema(
     services: [{
       serviceType: {
         type: String,
-        enum: ['domain', 'hosting'],
+        enum: ['domain', 'hosting', 'ssl'],
         required: true
       },
       serviceId: {
@@ -24,7 +24,7 @@ const contractSchema = new mongoose.Schema(
       },
       serviceModel: {
         type: String,
-        enum: ['DomainServices', 'HostingServices']
+        enum: ['DomainServices', 'HostingServices', 'SslServices']
       },
       price: {
         type: Number,
@@ -117,9 +117,11 @@ contractSchema.statics.getCustomerServices = async function(customerId) {
   
   const DomainServices = require('../services/domain/model');
   const HostingServices = require('../services/hosting/model');
+  const SslServices = require('../services/ssl/model');
 
   const domainServices = await DomainServices.find({ customerId: customerId });
   const hostingServices = await HostingServices.find({ customerId: customerId });
+  const sslServices = await SslServices.find({ customerId: customerId });
 
   domainServices.forEach(service => {
     services.push({
@@ -135,6 +137,15 @@ contractSchema.statics.getCustomerServices = async function(customerId) {
       serviceType: 'hosting',
       serviceId: service._id,
       serviceModel: 'HostingServices',
+      price: service.totalPrice || 0
+    });
+  });
+
+  sslServices.forEach(service => {
+    services.push({
+      serviceType: 'ssl',
+      serviceId: service._id,
+      serviceModel: 'SslServices',
       price: service.totalPrice || 0
     });
   });

@@ -447,6 +447,30 @@ const init = async () => {
         permission_id: new ObjectId("667467eb263fb998b9925d33"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
+      // xem dịch vụ ssl
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a995"),
+        permission_id: new ObjectId("667467eb263fb998b9925a39"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ ssl
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a996"),
+        permission_id: new ObjectId("667467eb263fb998b9925d37"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ ssl
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a994"),
+        permission_id: new ObjectId("667467eb263fb998b9925d38"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ ssl
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a998"),
+        permission_id: new ObjectId("667467eb263fb998b9925d39"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
 
 
       

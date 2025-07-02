@@ -1,7 +1,7 @@
 const DomainServices = require("../models/services/domain/model");
 const HostingPlans = require("../models/plans/hosting/model");
+const SslPlans = require("../models/plans/ssl/model");
 
-// Helper function to populate domainServiceId for hosting services
 const populateDomainServiceForHosting = async (contracts) => {
   for (const contract of contracts) {
     for (const service of contract.services) {
@@ -38,7 +38,26 @@ const populateHostingPlanForDomain = async (contracts) => {
   return contracts;
 };
 
+const populateSslPlanForDomain = async (contracts) => {
+  for (const contract of contracts) {
+    for (const service of contract.services) {
+      if (service.serviceType === 'ssl' && service.serviceId && service.serviceId.sslPlanId) {
+        try {
+          const sslPlan = await SslPlans.findById(service.serviceId.sslPlanId).select('name');
+          if (sslPlan) {
+            service.serviceId.sslPlanId = sslPlan;
+          }
+        } catch (error) {
+          console.error('Error populating ssl plan for domain:', error);
+        }
+      }
+    }
+  }
+  return contracts;
+};
+
 module.exports = {
   populateDomainServiceForHosting,
-  populateHostingPlanForDomain
+  populateHostingPlanForDomain,
+  populateSslPlanForDomain
 }; 

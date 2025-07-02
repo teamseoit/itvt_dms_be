@@ -1,284 +1,238 @@
 const dayjs = require('dayjs');
-
+const SslPlans = require("../../../models/plans/ssl/model");
 const SslServices = require("../../../models/services/ssl/model");
-const DomainServices = require("../../../models/services/domain/model");
+const Contracts = require("../../../models/contracts/model");
 const logAction = require("../../../middleware/actionLogs");
+const {
+  calculateDaysUntilExpiry,
+  determineStatus,
+  getStatusText
+} = require("../../../utils/serviceUtils");
 
 const sslServicesController = {
-  addSslServices: async(req, res) => {
+  getSslServices: async(req, res) => {
     try {
-      const {domain_service_id} = req.body;
-      const existingDomainName = await SslServices.findOne({domain_service_id});
-      if (existingDomainName) {
-        return res.status(400).json({message: 'Tên miền đăng ký đã tồn tại! Vui lòng chọn tên miền khác!'});
-      }
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const keyword = req.query.keyword || '';
 
-      const newSslServices = new SslServices(req.body);
-      newSslServices.expiredAt = new Date(newSslServices.registeredAt);
-      newSslServices.expiredAt.setFullYear(newSslServices.expiredAt.getFullYear() + req.body.periods);
-      const saveSslServices = await newSslServices.save();
-      await logAction(req.auth._id, 'Dịch vụ SSL', 'Thêm mới');
-      return res.status(200).json(saveSslServices);
+      const filter = keyword ? { name: { $regex: keyword, $options: 'i' } } : {};
+
+      const [sslServices, total] = await Promise.all([
+        SslServices.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('domainServiceId', 'name')
+          .populate('sslPlanId', 'name')
+          .populate('customerId', 'fullName phoneNumber')
+          .lean(),
+        SslServices.countDocuments(filter)
+      ]);
+
+      const updatedSslServices = sslServices.map(ssl => {
+        const daysUntilExpiry = calculateDaysUntilExpiry(ssl.expiredAt);
+        const statusText = getStatusText(ssl.status, daysUntilExpiry);
+        return { ...ssl, daysUntilExpiry, statusText };
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách dịch vụ ssl thành công.",
+        data: updatedSslServices,
+        meta: {
+          page, limit, totalDocs: total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error getting ssl services:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách dịch vụ ssl."
+      });
     }
   },
 
-  getSslServices: async(req, res) => {
+  addSslServices: async(req, res) => {
     try {
-      const { domainServiceName } = req.query;
+      const { domainServiceId, sslPlanId, customerId, periodValue, periodUnit, vatIncluded, registeredAt } = req.body;
 
-      let query = {};
-
-      if (domainServiceName) {
-        const matchingDomainServices = await DomainServices.find({
-          name: { $regex: domainServiceName, $options: 'i' }
-        }).select('_id');
-
-        const matchingIds = matchingDomainServices.map(ds => ds._id);
-        query.domain_service_id = { $in: matchingIds };
+      const exists = await SslServices.findOne({ domainServiceId });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên miền đã được đăng ký! Vui lòng chọn tên miền khác!"
+        });
       }
 
-      let sslServices = await SslServices
-        .find(query)
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id');
-      
-      for (const item of sslServices) {
-        const domain_plan_id = item.domain_service_id?.domain_plan_id;
-        const domain_supplier_id = item.domain_service_id?.supplier_id;
-        const ssl_supplier_id = item.ssl_plan_id?.supplier_id;
+      const plan = await SslPlans.findById(sslPlanId);
+      let totalPrice = 0;
+      let vatPrice = 0;
 
-        try {
-          sslServices = await SslServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                domain_plan_id: domain_plan_id,
-                domain_supplier_id: domain_supplier_id,
-                ssl_supplier_id: ssl_supplier_id,
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+      if (sslPlanId && plan) {
+        totalPrice = plan.retailPrice * periodValue;
+        vatPrice = vatIncluded ? plan.totalRetailPriceWithVAT * periodValue : plan.retailPrice * periodValue;
+      }
+
+      const expiredAt = dayjs(registeredAt).add(periodValue, 'year').toDate();
+      const daysUntilExpiry = calculateDaysUntilExpiry(expiredAt);
+      const status = determineStatus(daysUntilExpiry);
+
+      const newSslServices = new SslServices({
+        ...req.body,
+        totalPrice,
+        vatPrice,
+        registeredAt,
+        expiredAt,
+        daysUntilExpiry,
+        status
+      });
+
+      await newSslServices.save();
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(newSslServices.customerId);
+
+      await logAction(req.auth._id, 'Dịch vụ SSL', 'Thêm mới');
+      return res.status(201).json({
+        success: true,
+        message: "Thêm dịch vụ ssl thành công.",
+        data: {
+          ...newSslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(status, daysUntilExpiry)
         }
-      }
-
-      sslServices = await SslServices.find(query).sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslServices);
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error creating ssl service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi thêm dịch vụ ssl."
+      });
     }
   },
 
   getDetailSslServices: async(req, res) => {
     try {
-      const sslServices = await SslServices.findById(req.params.id)
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
+      const sslServices = await SslServices.findById(req.params.id);
+      if (!sslServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ ssl."
+        });
+      }
+      const daysUntilExpiry = calculateDaysUntilExpiry(sslServices.expiredAt);
 
-      return res.status(200).json(sslServices);
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết dịch vụ ssl thành công.",
+        data: {
+          ...sslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(sslServices.status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteSslServices: async(req, res) => {
-    try {
-      await SslServices.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Dịch vụ SSL', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error getting ssl service detail:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy chi tiết dịch vụ ssl."
+      });
     }
   },
 
   updateSslServices: async(req, res) => {
     try {
       const sslServices = await SslServices.findById(req.params.id);
-      if (req.body.periods) {
-        const currentDate = new Date();
-        const expiredAt = currentDate.setFullYear(currentDate.getFullYear() + req.body.periods);
-        await sslServices.updateOne({$set: {expiredAt: expiredAt, status: 1}});
+      if (!sslServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ ssl."
+        });
       }
 
-      if (req.body.before_payment) {
-        await sslServices.updateOne({$set: {before_payment: true}});
-      }
-      
-      await sslServices.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Dịch vụ SSL', 'Cập nhật', `/trang-chu/dich-vu/cap-nhat-ssl/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getSslServicesExpired: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var sslServicesExpired = await SslServices.find(
-        {
-          expiredAt: {$lte: currentDate}
+      if (req.body.periodValue) {
+        if (req.body.expiredAt) {
+          sslServices.expiredAt = dayjs(new Date(req.body.expiredAt))
+            .add(req.body.periodValue, 'year')
+            .toDate();
+        } else {
+          const startDate = sslServices.expiredAt && sslServices.status !== 3
+            ? sslServices.expiredAt
+            : new Date();
+          sslServices.expiredAt = dayjs(startDate)
+            .add(req.body.periodValue, 'year')
+            .toDate();
         }
-      );
+        sslServices.periodValue = req.body.periodValue;
 
-      for (const item of sslServicesExpired) {
-        try {
-          sslServicesExpired = await SslServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 3
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+        const plan = await SslPlans.findById(sslServices.sslPlanId);
+        sslServices.totalPrice = plan.retailPrice * req.body.periodValue;
+
+        if (req.body.vatIncluded) {
+          sslServices.vatPrice = plan.totalRetailPriceWithVAT * req.body.periodValue;
+        } else {
+          sslServices.vatPrice = plan.retailPrice * req.body.periodValue;
         }
       }
 
-      sslServicesExpired = await SslServices
-        .find(
-          {
-            expiredAt: {$lte: currentDate}
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslServicesExpired);
+      Object.keys(req.body).forEach(key => {
+        if (key !== 'periodValue' && key !== 'expiredAt') {
+          sslServices[key] = req.body[key];
+        }
+      });
+
+      const daysUntilExpiry = calculateDaysUntilExpiry(sslServices.expiredAt);
+      sslServices.status = determineStatus(daysUntilExpiry);
+      await sslServices.save();
+
+      // Cập nhật lại thông tin tài chính của contract
+      await Contracts.recalculateFinancials(sslServices.customerId);
+
+      await logAction(req.auth._id, 'Dịch vụ SSL', 'Cập nhật', `/dich-vu/ssl/${req.params.id}`);
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật dịch vụ ssl thành công.",
+        data: {
+          ...sslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(sslServices.status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error updating ssl service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi cập nhật dịch vụ ssl."
+      });
     }
   },
 
-  getSslServicesExpiring: async(req, res) => {
+  deleteSslServices: async(req, res) => {
     try {
-      var currentDate = new Date();
-      var dateExpired = dayjs(currentDate).add(30, 'day');
-      var sslServicesExpiring = await SslServices.find(
-        {
-          expiredAt: {
-            $gte: dayjs(currentDate).startOf('day').toDate(),
-            $lte: dayjs(dateExpired).endOf('day').toDate()
-          }
-        }
-      );
-
-      for (const item of sslServicesExpiring) {
-        try {
-          sslServicesExpiring = await SslServices.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 2
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
-        }
+      const deleted = await SslServices.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ ssl."
+        });
       }
 
-      sslServicesExpiring = await SslServices
-        .find(
-          {
-            expiredAt: {
-              $gte: dayjs(currentDate).startOf('day').toDate(),
-              $lte: dayjs(dateExpired).endOf('day').toDate()
-            }
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslServicesExpiring);
+      await logAction(req.auth._id, 'Dịch vụ SSL', 'Xóa');
+      return res.status(200).json({
+        success: true,
+        message: "Xóa dịch vụ ssl thành công."
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error deleting ssl service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi xóa dịch vụ ssl."
+      });
     }
   },
-
-  getSslServicesBeforePayment: async(req, res) => {
-    try {
-      const sslServicesBeforePayment = await SslServices
-        .find(
-          {
-            before_payment: true
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslServicesBeforePayment);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-  getSslServicesByCustomerId: async(req, res) => {
-    try {
-      const customer_id = req.params.customer_id;
-      const sslServices = await SslServices
-        .find(
-          {
-            customer_id: customer_id
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_service_id')
-        .populate('ssl_plan_id')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslServices);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  }
 }
 
 module.exports = sslServicesController;

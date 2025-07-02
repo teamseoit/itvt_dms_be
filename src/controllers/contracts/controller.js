@@ -1,6 +1,6 @@
 const Contracts = require("../../models/contracts/model");
 const logAction = require("../../middleware/actionLogs");
-const { populateDomainServiceForHosting, populateHostingPlanForDomain, populateSslPlanForDomain } = require("../../utils/contractUtils");
+const { populateDomainServiceForHosting, populateHostingPlanForDomain, populateSslPlanForDomain, populateEmailPlanForDomain } = require("../../utils/contractUtils");
 
 const normalizeText = (text) =>
   text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -71,6 +71,7 @@ const contractController = {
       await populateDomainServiceForHosting([contract]);
       await populateHostingPlanForDomain([contract]);
       await populateSslPlanForDomain([contract]);
+      await populateEmailPlanForDomain([contract]);
 
       return res.status(200).json({ success: true, data: contract });
     } catch (err) {

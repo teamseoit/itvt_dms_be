@@ -1,6 +1,7 @@
 const DomainServices = require("../models/services/domain/model");
 const HostingPlans = require("../models/plans/hosting/model");
 const SslPlans = require("../models/plans/ssl/model");
+const EmailPlans = require("../models/plans/email/model");
 
 const populateDomainServiceForHosting = async (contracts) => {
   for (const contract of contracts) {
@@ -56,8 +57,27 @@ const populateSslPlanForDomain = async (contracts) => {
   return contracts;
 };
 
+const populateEmailPlanForDomain = async (contracts) => {
+  for (const contract of contracts) {
+    for (const service of contract.services) {
+      if (service.serviceType === 'email' && service.serviceId && service.serviceId.emailPlanId) {
+        try {
+          const emailPlan = await EmailPlans.findById(service.serviceId.emailPlanId).select('name');
+          if (emailPlan) {
+            service.serviceId.emailPlanId = emailPlan;
+          }
+        } catch (error) {
+          console.error('Error populating email plan for domain:', error);
+        }
+      }
+    }
+  }
+  return contracts;
+};
+
 module.exports = {
   populateDomainServiceForHosting,
   populateHostingPlanForDomain,
-  populateSslPlanForDomain
+  populateSslPlanForDomain,
+  populateEmailPlanForDomain
 }; 

@@ -63,10 +63,29 @@ const customerController = {
       const filter = {};
 
       if (keyword) {
-        filter.$or = [
-          { fullName: { $regex: keyword, $options: 'i' } },
-          { phoneNumber: keyword }
-        ];
+        const trimmed = String(keyword).trim();
+        const isNumeric = /^\d+$/.test(trimmed);
+
+        if (isNumeric) {
+          const digits = trimmed.replace(/^0+/, '') || '0';
+          const phoneExpr = {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$phoneNumber" },
+                regex: digits
+              }
+            }
+          };
+
+          filter.$or = [
+            { fullName: { $regex: trimmed, $options: 'i' } },
+            phoneExpr
+          ];
+        } else {
+          filter.$or = [
+            { fullName: { $regex: trimmed, $options: 'i' } }
+          ];
+        }
       }
 
       if (typeCustomer !== undefined) {
@@ -114,6 +133,13 @@ const customerController = {
         return res.status(400).json({
           success: false,
           message: 'CCCD là trường bắt buộc!'
+        });
+      }
+
+      if (!phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          message: 'Số điện thoại là trường bắt buộc!'
         });
       }
 

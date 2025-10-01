@@ -12,6 +12,7 @@ const connectDB = require("./src/config/connectDB");
 const verifyAccessToken = require("./src/middleware/verifyAccessToken");
 const initAll = require("./src/init");
 const loadRoutes = require("./src/utils/loadRoutes");
+const { updateDomainServicesStatus, sendDomainNotifications } = require('./src/utils/domainStatusUpdater');
 
 const app = express();
 
@@ -43,6 +44,21 @@ const startServer = async () => {
       console.log(`Environment: ${environment}`);
       console.log(`Domain: ${domain}`);
       console.log("========================================================");
+
+      // Cron: chạy mỗi ngày lúc 00:00
+      // Thứ tự: cập nhật status -> nếu có domain cần gửi thì gửi email
+      cron.schedule('0 0 * * *', async () => {
+        try {
+          console.log('[CRON] Start domain status update at 00:00');
+          const result = await updateDomainServicesStatus(false);
+          console.log('[CRON] Updated domains:', result);
+
+          const notify = await sendDomainNotifications();
+          console.log('[CRON] Notification result:', notify);
+        } catch (err) {
+          console.error('[CRON] Error running domain status cron:', err);
+        }
+      }, { timezone: 'Asia/Ho_Chi_Minh' });
     });
   } catch (error) {
     console.error("Error starting server:", error);

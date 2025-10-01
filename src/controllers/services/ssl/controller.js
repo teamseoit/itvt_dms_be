@@ -16,8 +16,21 @@ const sslServicesController = {
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
       const keyword = req.query.keyword || '';
+      const status = req.query.status ? parseInt(req.query.status) : undefined;
 
       const filter = keyword ? { name: { $regex: keyword, $options: 'i' } } : {};
+
+      if (!Number.isNaN(status) && [1, 2, 3].includes(status)) {
+        const now = new Date();
+        const soon = dayjs().add(30, 'day').toDate();
+        if (status === 1) {
+          filter.expiredAt = { $gt: soon };
+        } else if (status === 2) {
+          filter.expiredAt = { $gte: now, $lte: soon };
+        } else if (status === 3) {
+          filter.expiredAt = { $lt: now };
+        }
+      }
 
       const [sslServices, total] = await Promise.all([
         SslServices.find(filter)
@@ -33,8 +46,9 @@ const sslServicesController = {
 
       const updatedSslServices = sslServices.map(ssl => {
         const daysUntilExpiry = calculateDaysUntilExpiry(ssl.expiredAt);
-        const statusText = getStatusText(ssl.status, daysUntilExpiry);
-        return { ...ssl, daysUntilExpiry, statusText };
+        const computedStatus = determineStatus(daysUntilExpiry);
+        const statusText = getStatusText(computedStatus, daysUntilExpiry);
+        return { ...ssl, status: computedStatus, daysUntilExpiry, statusText };
       });
 
       return res.status(200).json({

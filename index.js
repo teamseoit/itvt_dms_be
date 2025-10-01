@@ -12,7 +12,7 @@ const connectDB = require("./src/config/connectDB");
 const verifyAccessToken = require("./src/middleware/verifyAccessToken");
 const initAll = require("./src/init");
 const loadRoutes = require("./src/utils/loadRoutes");
-const { updateDomainServicesStatus, sendDomainNotifications } = require('./src/utils/domainStatusUpdater');
+const { updateAllServiceStatuses, sendConsolidatedNotifications } = require('./src/utils/serviceStatusUpdater');
 
 const app = express();
 
@@ -46,14 +46,14 @@ const startServer = async () => {
       console.log("========================================================");
 
       // Cron: chạy mỗi ngày lúc 00:00
-      // Thứ tự: cập nhật status -> nếu có domain cần gửi thì gửi email
+      // Thứ tự: cập nhật status -> nếu có dịch vụ cần gửi thì gửi email (gộp theo tên miền)
       cron.schedule('0 0 * * *', async () => {
         try {
-          console.log('[CRON] Start domain status update at 00:00');
-          const result = await updateDomainServicesStatus(false);
-          console.log('[CRON] Updated domains:', result);
+          console.log('[CRON] Start service status update at 00:00');
+          const result = await updateAllServiceStatuses(false);
+          console.log('[CRON] Updated services:', result);
 
-          const notify = await sendDomainNotifications();
+          const notify = await sendConsolidatedNotifications();
           console.log('[CRON] Notification result:', notify);
         } catch (err) {
           console.error('[CRON] Error running domain status cron:', err);

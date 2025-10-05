@@ -130,14 +130,17 @@ const emailPlansController = {
         }
       }
 
+      // Sử dụng giá trị mới từ req.body, nếu không có thì dùng giá cũ
+      const currentPurchasePrice = purchasePrice !== undefined ? purchasePrice : plan.purchasePrice;
+      const currentRetailPrice = retailPrice !== undefined ? retailPrice : plan.retailPrice;
+      const currentVat = vat !== undefined ? vat : plan.vat;
+
       const updateData = {
         ...req.body,
-        ...(purchasePrice !== undefined && retailPrice !== undefined && {
-          totalPurchaseWithoutVAT: purchasePrice * 12,
-          totalPurchaseWithVAT: calculateYearlyTotal(purchasePrice, vat),
-          totalRetailWithoutVAT: retailPrice * 12,
-          totalRetailWithVAT: calculateYearlyTotal(retailPrice, vat)
-        })
+        totalPurchaseWithoutVAT: currentPurchasePrice * 12,
+        totalPurchaseWithVAT: calculateYearlyTotal(currentPurchasePrice, currentVat),
+        totalRetailWithoutVAT: currentRetailPrice * 12,
+        totalRetailWithVAT: calculateYearlyTotal(currentRetailPrice, currentVat)
       };
 
       const updatedPlan = await EmailPlans.findByIdAndUpdate(id, { $set: updateData }, { new: true })

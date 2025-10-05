@@ -112,7 +112,7 @@ const hostingPlansController = {
   updateHostingPlans: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, vat } = req.body;
+      const { name, vat, purchasePrice } = req.body;
 
       const plan = await HostingPlans.findById(id);
 
@@ -136,11 +136,12 @@ const hostingPlansController = {
         }
       }
 
-      const purchasePrice = plan.purchasePrice;
+      // Sử dụng purchasePrice mới từ req.body, nếu không có thì dùng giá cũ
+      const currentPurchasePrice = purchasePrice !== undefined ? purchasePrice : plan.purchasePrice;
 
       const vatPrice = totalPrice = vat && vat > 0 
-        ? purchasePrice + (purchasePrice * (vat / 100))
-        : purchasePrice;
+        ? currentPurchasePrice + (currentPurchasePrice * (vat / 100))
+        : currentPurchasePrice;
 
       const updatedPlan = await HostingPlans.findByIdAndUpdate(
         id,

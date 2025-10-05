@@ -122,7 +122,7 @@ const domainPlansController = {
   updateDomainPlan: async (req, res) => {
     try {
       const { id } = req.params;
-      const { vat } = req.body;
+      const { vat, purchasePrice } = req.body;
 
       const plan = await DomainPlan.findById(id);
       if (!plan) {
@@ -132,11 +132,12 @@ const domainPlansController = {
         });
       }
 
-      const purchasePrice = plan.purchasePrice;
+      // Sử dụng purchasePrice mới từ req.body, nếu không có thì dùng giá cũ
+      const currentPurchasePrice = purchasePrice !== undefined ? purchasePrice : plan.purchasePrice;
 
       const vatPrice = vat && vat > 0 
-        ? purchasePrice + (purchasePrice * (vat / 100))
-        : purchasePrice;
+        ? currentPurchasePrice + (currentPurchasePrice * (vat / 100))
+        : currentPurchasePrice;
 
       const updatedPlan = await DomainPlan.findByIdAndUpdate(
         id,

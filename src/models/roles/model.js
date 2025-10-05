@@ -495,6 +495,31 @@ const init = async () => {
         permission_id: new ObjectId("667467eb263fb998b9925d39"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
+      // xem dịch vụ website
+      {
+        _id: new ObjectId("668653c9e55c5173ec41a9a9"),
+        permission_id: new ObjectId("667467eb263fb998b9925a48"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ website
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9a5"),
+        permission_id: new ObjectId("667467eb263fb998b9925d46"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ website
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9a7"),
+        permission_id: new ObjectId("667467eb263fb998b9925d47"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ website
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9a9"),
+        permission_id: new ObjectId("667467eb263fb998b9925d48"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      
 
 
       
@@ -589,30 +614,7 @@ const init = async () => {
         permission_id: new ObjectId("667467eb263fb998b9925a45"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
-      //Tạo dịch vụ website
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c9a5"),
-        permission_id: new ObjectId("667467eb263fb998b9925d46"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ website
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c9a7"),
-        permission_id: new ObjectId("667467eb263fb998b9925d47"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ website
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c9a9"),
-        permission_id: new ObjectId("667467eb263fb998b9925d48"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ website
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a9a9"),
-        permission_id: new ObjectId("667467eb263fb998b9925a48"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+      
 
       // hợp đồng
         // xem hợp đồng

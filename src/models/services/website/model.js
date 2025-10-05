@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const websiteServicesSchema = new mongoose.Schema({
-  domain_service_id: {
+  domainServiceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "DomainServices"
   },
@@ -9,7 +9,7 @@ const websiteServicesSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  customer_id: {
+  customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customers",
     index: true
@@ -18,24 +18,18 @@ const websiteServicesSchema = new mongoose.Schema({
     type: Number,
     default: 1
   },
-  domain_plan_id: {
+  domainPlanId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "DomainPlans"
   },
-  domain_supplier_id: {
+  domainSupplierId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
+    ref: "ServiceSuppliers"
+  },
+  endDate: {
+    type: Date
   }
 }, {timestamps: true});
-
-websiteServicesSchema.post(['save','updateOne','create'], async function (next) {
-  const ModelContract = require('../../contracts/model');
-  if (this.customer_id) {
-    ModelContract.create_or_update_contract(this.customer_id);
-  } else if (this['$set']?.customer_id) {
-    ModelContract.create_or_update_contract(this['$set']?.customer_id);
-  }
-});
 
 let WebsiteServices = mongoose.model("WebsiteServices", websiteServicesSchema);
 module.exports = WebsiteServices;

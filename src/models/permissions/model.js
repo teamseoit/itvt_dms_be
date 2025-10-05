@@ -437,6 +437,26 @@ const init = async () => {
             name: "Xóa dịch vụ ssl",
         },
         {
+            _id: new ObjectId("667467eb263fb998b9925a48"),
+            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+            name: "Xem dịch vụ website",
+        },
+        {
+            _id: new ObjectId("667467eb263fb998b9925d46"),
+            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+            name: "Tạo dịch vụ website",
+        },
+        {
+            _id: new ObjectId("667467eb263fb998b9925d47"),
+            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+            name: "Sửa dịch vụ website",
+        },
+        {
+            _id: new ObjectId("667467eb263fb998b9925d48"),
+            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+            name: "Xóa dịch vụ website",
+        },
+        {
             _id: new ObjectId("667467eb263fb998b9925a3a"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Xem dịch vụ viết bài content & PR",
@@ -516,26 +536,7 @@ const init = async () => {
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Xóa dịch vụ toplist",
         },
-        {
-            _id: new ObjectId("667467eb263fb998b9925a48"),
-            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xem dịch vụ website",
-        },
-        {
-            _id: new ObjectId("667467eb263fb998b9925d46"),
-            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ website",
-        },
-        {
-            _id: new ObjectId("667467eb263fb998b9925d47"),
-            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Sửa dịch vụ website",
-        },
-        {
-            _id: new ObjectId("667467eb263fb998b9925d48"),
-            permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xóa dịch vụ website",
-        },
+        
 
         // hợp đồng
         {

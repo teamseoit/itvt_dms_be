@@ -3,193 +3,264 @@ const HostingServices = require("../../models/services/hosting/model");
 const EmailServices = require("../../models/services/email/model");
 const SslServices = require("../../models/services/ssl/model");
 const WebsiteServices = require("../../models/services/website/model");
-const ContentServices = require("../../models/services/content/model");
-const ToplistServices = require("../../models/services/toplist/model");
-const MaintenanceServices = require("../../models/services/maintenance/model");
-const MobileNetworkServices = require("../../models/services/mobile-network/model");
+
+// Mapping dịch vụ với ID và thông tin
+const SERVICES_MAP = {
+  1: { name: 'Domain', model: DomainServices, priceField: 'totalPrice', dateField: 'registeredAt' },
+  2: { name: 'Hosting', model: HostingServices, priceField: 'totalPrice', dateField: 'registeredAt' },
+  3: { name: 'Email', model: EmailServices, priceField: 'totalPrice', dateField: 'registeredAt' },
+  4: { name: 'SSL', model: SslServices, priceField: 'totalPrice', dateField: 'registeredAt' },
+  5: { name: 'Website', model: WebsiteServices, priceField: 'price', dateField: 'createdAt' }
+};
+
+// Helper function để lấy danh sách dịch vụ
+const getAllServices = () => Object.keys(SERVICES_MAP).map(id => ({
+  id: parseInt(id),
+  name: SERVICES_MAP[id].name
+}));
+
+// Helper function để lấy dịch vụ theo ID
+const getServicesByIds = (serviceIds) => {
+  if (!serviceIds || serviceIds.length === 0) {
+    return Object.values(SERVICES_MAP);
+  }
+  
+  return serviceIds
+    .map(id => SERVICES_MAP[id])
+    .filter(service => service !== undefined);
+};
 
 const statisticsController = {
-  getYears: async(req, res) => {
+  // API lấy danh sách dịch vụ
+  getServices: async (req, res) => {
     try {
-      const { service } = req.query;
-
-      if (!service) {
-        return res.status(400).json({message: 'Vui lòng chọn dịch vụ!'});
-      }
-
-      const serviceNum = parseInt(service);
-      let model = null;
-      let matchField = "registeredAt";
-
-      switch (serviceNum) {
-        case 1:
-          model = DomainServices;
-          break;
-        case 2:
-          model = HostingServices;
-          break;
-        case 3:
-          model = EmailServices;
-          break;
-        case 4:
-          model = SslServices;
-          break;
-        case 5:
-          model = WebsiteServices;
-          matchField = "createdAt";
-          break;
-        case 6:
-          model = ContentServices;
-          break;
-        case 7:
-          model = ToplistServices;
-          break;
-        case 8:
-          model = MaintenanceServices;
-          break;
-        case 9:
-          model = MobileNetworkServices;
-          break;
-        default:
-          return res.status(400).json({ message: 'Dịch vụ không hợp lệ!' });
-      }
-
-      const years = await model.aggregate([
-        {
-          $match: { [matchField]: { $ne: null } }
-        },
-        {
-          $project: {
-            year: { $year: `$${matchField}` }
-          }
-        },
-        {
-          $group: {
-            _id: "$year"
-          }
-        },
-        {
-          $sort: { _id: 1 }
-        }
-      ]);
-  
-      const formattedYears = years.map(item => item._id.toString());
-  
-      return res.json(formattedYears);
+      const services = getAllServices();
+      return res.json(services);
     } catch (err) {
-      console.error("Lỗi lấy danh sách năm:", err);
-      return res.status(500).send(err.message);
+      console.error("Lỗi lấy danh sách dịch vụ:", err);
+      return res.status(500).json({ message: err.message });
     }
   },
 
-  getStatistics: async (req, res) => {
-    const { year, service } = req.query;
-  
-    if (!year || !service) {
-      return res.status(400).json({ message: "Vui lòng chọn năm và dịch vụ!" });
+  getExpenseReportYears: async (req, res) => {
+    try {
+      const services = Object.values(SERVICES_MAP);
+
+      const allYears = new Set();
+
+      for (const service of services) {
+        const years = await service.model.aggregate([
+          {
+            $match: { [service.dateField]: { $ne: null } }
+          },
+          {
+            $project: {
+              year: { $year: `$${service.dateField}` }
+            }
+          },
+          {
+            $group: {
+              _id: "$year"
+            }
+          }
+        ]);
+
+        years.forEach(item => allYears.add(item._id));
+      }
+
+      const sortedYears = Array.from(allYears).sort().map(year => year.toString());
+      return res.json(sortedYears);
+    } catch (err) {
+      console.error("Lỗi lấy danh sách năm chi phí:", err);
+      return res.status(500).json({ message: err.message });
     }
-  
-    const serviceNum = parseInt(service);
-    const start = new Date(`${year}-01-01`);
-    const end = new Date(`${parseInt(year) + 1}-01-01`);
-  
-    const serviceConfigs = {
-      1: { model: DomainServices, planField: "domain_plan_id", planCollection: "domainplans", dateField: "registeredAt" },
-      2: { model: HostingServices, planField: "hosting_plan_id", planCollection: "hostingplans", dateField: "registeredAt" },
-      3: { model: SslServices, planField: "ssl_plan_id", planCollection: "sslplans", dateField: "registeredAt" },
-      4: { model: EmailServices, planField: "email_plan_id", planCollection: "emailplans", dateField: "registeredAt" },
-      5: { model: WebsiteServices, dateField: "createdAt", priceOnly: true },
-      6: { model: ContentServices, planField: "content_plan_id", planCollection: "contentplans", dateField: "registeredAt" },
-      7: { model: ToplistServices, dateField: "registeredAt", priceOnly: true },
-      8: { model: MaintenanceServices, planField: "maintenance_plan_id", planCollection: "maintenanceplans", dateField: "registeredAt" },
-      9: { model: MobileNetworkServices, planField: "mobile_network_plan_id", planCollection: "mobilenetworkplans", dateField: "registeredAt" }
-    };
-  
-    const config = serviceConfigs[serviceNum];
-  
-    if (!config) {
-      return res.status(400).json({ message: "Dịch vụ chưa được hỗ trợ!" });
+  },
+
+  // API mới để tổng hợp chi phí của các dịch vụ
+  getServicesExpenseReport: async (req, res) => {
+    try {
+      const { year, month, services: serviceIds } = req.query;
+      
+      if (!year) {
+        return res.status(400).json({ message: "Vui lòng chọn năm!" });
+      }
+
+      // Parse service IDs từ query string
+      let selectedServiceIds = [];
+      if (serviceIds) {
+        if (typeof serviceIds === 'string') {
+          selectedServiceIds = serviceIds.split(',').map(id => parseInt(id.trim()));
+        } else if (Array.isArray(serviceIds)) {
+          selectedServiceIds = serviceIds.map(id => parseInt(id));
+        }
+        
+        // Validate service IDs
+        const invalidIds = selectedServiceIds.filter(id => !SERVICES_MAP[id]);
+        if (invalidIds.length > 0) {
+          return res.status(400).json({ 
+            message: `Dịch vụ không hợp lệ: ${invalidIds.join(', ')}` 
+          });
+        }
+      }
+
+      const start = new Date(`${year}-01-01`);
+      const end = new Date(`${parseInt(year) + 1}-01-01`);
+      
+      // Nếu có tháng cụ thể, tính toán theo tháng
+      if (month) {
+        const monthNum = parseInt(month);
+        if (monthNum < 1 || monthNum > 12) {
+          return res.status(400).json({ message: "Tháng không hợp lệ!" });
+        }
+        
+        const monthStart = new Date(`${year}-${monthNum.toString().padStart(2, '0')}-01`);
+        const monthEnd = new Date(`${year}-${(monthNum + 1).toString().padStart(2, '0')}-01`);
+        
+        return await getMonthlyExpenseReport(res, monthStart, monthEnd, monthNum, selectedServiceIds);
+      }
+      
+      // Nếu không có tháng, tính toán theo năm
+      return await getYearlyExpenseReport(res, start, end, year, selectedServiceIds);
+      
+    } catch (err) {
+      console.error("Lỗi tạo báo cáo chi phí:", err);
+      return res.status(500).json({ message: err.message });
     }
-  
-    let results = [];
-  
-    if (config.priceOnly) {
-      results = await config.model.aggregate([
-        {
-          $match: {
-            [config.dateField]: { $gte: start, $lt: end }
-          }
-        },
-        {
-          $group: {
-            _id: { $month: `$${config.dateField}` },
-            price: { $sum: "$price" }
-          }
-        },
-        {
-          $project: {
-            month: "$_id",
-            price: 1,
-            import_price: { $literal: 0 },
-            profit: "$price",
-            _id: 0
-          }
-        },
-        { $sort: { month: 1 } }
-      ]);
-    } else {
-      results = await config.model.aggregate([
-        {
-          $match: {
-            [config.dateField]: { $gte: start, $lt: end },
-            [config.planField]: { $ne: null }
-          }
-        },
-        {
-          $lookup: {
-            from: config.planCollection,
-            localField: config.planField,
-            foreignField: "_id",
-            as: "plan"
-          }
-        },
-        { $unwind: "$plan" },
-        {
-          $group: {
-            _id: { $month: `$${config.dateField}` },
-            import_price: { $sum: "$plan.import_price" },
-            price: { $sum: "$plan.price" }
-          }
-        },
-        {
-          $project: {
-            month: "$_id",
-            import_price: 1,
-            price: 1,
-            profit: { $subtract: ["$price", "$import_price"] },
-            _id: 0
-          }
-        },
-        { $sort: { month: 1 } }
-      ]);
-    }
-  
-    const formatted = results.map(item => ({
-      month: `Tháng ${item.month}`,
-      import_price: item.import_price,
-      price: item.price,
-      profit: item.profit
-    }));
-  
-    const total = formatted.reduce((acc, item) => {
-      acc.import_price += item.import_price;
-      acc.price += item.price;
-      acc.profit += item.profit;
-      return acc;
-    }, { import_price: 0, price: 0, profit: 0 });
-  
-    return res.json({ data: formatted, total });
   }
+}
+
+// Helper function để tính toán chi phí theo tháng
+async function getMonthlyExpenseReport(res, start, end, month, selectedServiceIds = []) {
+  const services = getServicesByIds(selectedServiceIds);
+
+  const results = {};
+  let totalExpense = 0;
+
+  // Sử dụng Promise.all để tối ưu hiệu suất
+  const servicePromises = services.map(async (service) => {
+    const aggregation = await service.model.aggregate([
+      {
+        $match: {
+          [service.dateField]: { $gte: start, $lt: end }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalPrice: { $sum: `$${service.priceField}` },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const serviceData = aggregation.length > 0 ? aggregation[0] : { totalPrice: 0, count: 0 };
+    return {
+      name: service.name,
+      data: {
+        totalPrice: serviceData.totalPrice,
+        count: serviceData.count
+      }
+    };
+  });
+
+  const serviceResults = await Promise.all(servicePromises);
+  
+  serviceResults.forEach(({ name, data }) => {
+    results[name] = data;
+    totalExpense += data.totalPrice;
+  });
+
+  return res.json({
+    period: `Tháng ${month}`,
+    data: results,
+    totalExpense: totalExpense,
+    summary: {
+      totalServices: Object.keys(results).length,
+      totalRecords: Object.values(results).reduce((sum, item) => sum + item.count, 0)
+    }
+  });
+}
+
+// Helper function để tính toán chi phí theo năm
+async function getYearlyExpenseReport(res, start, end, year, selectedServiceIds = []) {
+  const services = getServicesByIds(selectedServiceIds);
+
+  const monthlyData = {};
+  const yearlyTotals = {};
+  let grandTotal = 0;
+
+  // Khởi tạo dữ liệu cho 12 tháng
+  for (let month = 1; month <= 12; month++) {
+    monthlyData[month] = {};
+    for (const service of services) {
+      monthlyData[month][service.name] = { totalPrice: 0, count: 0 };
+    }
+  }
+
+  // Khởi tạo tổng năm cho từng dịch vụ
+  for (const service of services) {
+    yearlyTotals[service.name] = { totalPrice: 0, count: 0 };
+  }
+
+  // Sử dụng Promise.all để tối ưu hiệu suất
+  const servicePromises = services.map(async (service) => {
+    const aggregation = await service.model.aggregate([
+      {
+        $match: {
+          [service.dateField]: { $gte: start, $lt: end }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: `$${service.dateField}` },
+          totalPrice: { $sum: `$${service.priceField}` },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]);
+
+    return { service: service.name, data: aggregation };
+  });
+
+  const serviceResults = await Promise.all(servicePromises);
+
+  // Cập nhật dữ liệu theo tháng
+  serviceResults.forEach(({ service, data }) => {
+    data.forEach(item => {
+      const month = item._id;
+      monthlyData[month][service] = {
+        totalPrice: item.totalPrice,
+        count: item.count
+      };
+      yearlyTotals[service].totalPrice += item.totalPrice;
+      yearlyTotals[service].count += item.count;
+    });
+
+    grandTotal += yearlyTotals[service].totalPrice;
+  });
+
+  // Format dữ liệu tháng
+  const formattedMonthlyData = Object.keys(monthlyData).map(month => ({
+    month: `Tháng ${month}`,
+    monthNumber: parseInt(month),
+    services: monthlyData[month],
+    monthlyTotal: Object.values(monthlyData[month]).reduce((sum, service) => sum + service.totalPrice, 0)
+  }));
+
+  return res.json({
+    period: `Năm ${year}`,
+    monthlyData: formattedMonthlyData,
+    yearlyTotals: yearlyTotals,
+    grandTotal: grandTotal,
+    summary: {
+      totalServices: services.length,
+      totalRecords: Object.values(yearlyTotals).reduce((sum, item) => sum + item.count, 0),
+      averageMonthlyExpense: grandTotal / 12
+    }
+  });
 }
 
 module.exports = statisticsController;

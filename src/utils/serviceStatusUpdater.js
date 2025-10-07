@@ -5,6 +5,7 @@ const HostingServices = require('../models/services/hosting/model');
 const SslServices = require('../models/services/ssl/model');
 const Customers = require('../models/customers/model');
 const sendEmail = require('./sendEmail');
+const config = require('../config/env');
 const {
   calculateDaysUntilExpiry,
   determineStatus,
@@ -153,7 +154,7 @@ async function sendConsolidatedNotifications() {
     return { sent: false, reason: 'No items to notify' };
   }
 
-  const recipientsEnv = process.env.DOMAIN_ALERT_RECIPIENTS || process.env.EMAIL_TO || '';
+  const recipientsEnv = config.DOMAIN_ALERT_RECIPIENTS || config.EMAIL_TO || '';
   const recipients = recipientsEnv.split(',').map(s => s.trim()).filter(Boolean);
   if (recipients.length === 0) {
     return { sent: false, reason: 'No recipients configured' };

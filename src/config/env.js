@@ -28,6 +28,8 @@ module.exports = {
   MONGO_URL: process.env.MONGO_URL,
   EMAIL_USER: process.env.EMAIL_USER,
   EMAIL_PASS: process.env.EMAIL_PASS,
+  EMAIL_TO: process.env.EMAIL_TO,
+  DOMAIN_ALERT_RECIPIENTS: process.env.DOMAIN_ALERT_RECIPIENTS,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
 };

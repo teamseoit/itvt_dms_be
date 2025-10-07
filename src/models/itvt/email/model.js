@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 
-const sslServicesSchema = new mongoose.Schema({
+const itvtEmailServicesSchema = new mongoose.Schema({
   domainServiceId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "DomainServices"
+    ref: "ItvtDomainServices"
   },
-  sslPlanId: {
+  emailPlanId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "SSLPlans"
+    ref: "EmailPlans"
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -28,7 +28,6 @@ const sslServicesSchema = new mongoose.Schema({
   },
   status: {
     type: Number,
-    enum: [1, 2, 3],
     default: 1
   },
   registeredAt: {
@@ -51,5 +50,5 @@ const sslServicesSchema = new mongoose.Schema({
   }
 }, {timestamps: true});
 
-let SslServices = mongoose.model("SslServices", sslServicesSchema);
-module.exports = SslServices;
+let ItvtEmailServices = mongoose.model("ItvtEmailServices", itvtEmailServicesSchema);
+module.exports = ItvtEmailServices;

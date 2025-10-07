@@ -1,13 +1,12 @@
 const router = require("express").Router();
 const { check_role } = require("../../../middleware/roleMiddleware");
-const domainITVTController = require("../../../controllers/itvt/domain/controller");
+const itvtDomainServicesController = require("../../../controllers/itvt/domain/controller");
 
-router.post("/", check_role("667467eb263fb998b9925d2e"), domainITVTController.addDomainITVT);
-router.get("/", domainITVTController.getDomainITVT);
-router.get("/:id", domainITVTController.getDetailDomainITVT);
-router.put("/:id", check_role("667467eb263fb998b9925d2f"), domainITVTController.updateDomainITVT);
-router.delete("/:id", check_role("667467eb263fb998b9925d30"), domainITVTController.deleteDomainITVT);
-router.get("/expired/all", domainITVTController.getDomainITVTExpired);
-router.get("/expiring/all", domainITVTController.getDomainITVTExpiring);
+// ITVT Domain Services Routes
+router.get("/", check_role("667467eb263fb998b9925d49"), itvtDomainServicesController.getItvtDomainServices);
+router.post("/", check_role("667467eb263fb998b9925d4a"), itvtDomainServicesController.addItvtDomainServices);
+router.get("/:id", check_role("667467eb263fb998b9925d4b"), itvtDomainServicesController.getDetailItvtDomainServices);
+router.put("/:id", check_role("667467eb263fb998b9925d4b"), itvtDomainServicesController.updateItvtDomainServices);
+router.delete("/:id", check_role("667467eb263fb998b9925d4c"), itvtDomainServicesController.deleteItvtDomainServices);
 
 module.exports = router;

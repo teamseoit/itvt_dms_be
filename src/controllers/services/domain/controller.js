@@ -2,6 +2,10 @@ const dayjs = require('dayjs');
 const DomainPlans = require("../../../models/plans/domain/model");
 const DomainServices = require("../../../models/services/domain/model");
 const Contracts = require("../../../models/contracts/model");
+const EmailServices = require("../../../models/services/email/model");
+const HostingServices = require("../../../models/services/hosting/model");
+const SslServices = require("../../../models/services/ssl/model");
+const WebsiteServices = require("../../../models/services/website/model");
 const logAction = require("../../../middleware/actionLogs");
 const {
   calculateDaysUntilExpiry,
@@ -227,13 +231,40 @@ const domainServicesController = {
 
   deleteDomainServices: async (req, res) => {
     try {
-      const deleted = await DomainServices.findByIdAndDelete(req.params.id);
-      if (!deleted) {
+      const domainId = req.params.id;
+      
+      // Kiểm tra xem domain có tồn tại không
+      const domain = await DomainServices.findById(domainId);
+      if (!domain) {
         return res.status(404).json({
           success: false,
           message: "Không tìm thấy dịch vụ tên miền để xóa."
         });
       }
+
+      // Kiểm tra xem domain có đang được sử dụng trong các service khác không
+      const [emailServices, hostingServices, sslServices, websiteServices] = await Promise.all([
+        EmailServices.find({ domainServiceId: domainId }),
+        HostingServices.find({ domainServiceId: domainId }),
+        SslServices.find({ domainServiceId: domainId }),
+        WebsiteServices.find({ domainServiceId: domainId })
+      ]);
+
+      const usedServices = [];
+      if (emailServices.length > 0) usedServices.push('Email');
+      if (hostingServices.length > 0) usedServices.push('Hosting');
+      if (sslServices.length > 0) usedServices.push('SSL');
+      if (websiteServices.length > 0) usedServices.push('Website');
+
+      if (usedServices.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Không thể xóa tên miền này vì đang được sử dụng trong: ${usedServices.join(', ')}.`
+        });
+      }
+
+      // Nếu không có service nào sử dụng domain này, tiến hành xóa
+      const deleted = await DomainServices.findByIdAndDelete(domainId);
 
       await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Xóa');
       return res.status(200).json({

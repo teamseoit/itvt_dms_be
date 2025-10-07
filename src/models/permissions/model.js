@@ -250,106 +250,106 @@ const init = async () => {
             permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
             name: "Xóa gói ssl",
         },
-        {
-            _id: new ObjectId("66746678f7f723b779b1a06e"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xem gói viết bài content & PR",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b06b"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Tạo gói viết bài content & PR",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b06c"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Sửa gói viết bài content & PR",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b06d"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xóa gói viết bài content & PR",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1a070"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xem gói bảo trì",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b06e"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Tạo gói bảo trì",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b06f"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Sửa gói bảo trì",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b070"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xóa gói bảo trì",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1a073"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xem gói mạng",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b071"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Tạo gói mạng",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b072"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Sửa gói mạng",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b073"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xóa gói mạng",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1a075"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xem server",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b074"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Tạo server",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b075"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Sửa server",
-        },
-        {
-            _id: new ObjectId("66746678f7f723b779b1b076"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xóa server",
-        },
-        {
-            _id: new ObjectId("66746678f7f500b779b1e084"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xem gói toplist",
-        },
-        {
-            _id: new ObjectId("66746678f7f500b779b1e081"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Tạo gói toplist",
-        },
-        {
-            _id: new ObjectId("66746678f7f500b779b1e082"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Sửa gói toplist",
-        },
-        {
-            _id: new ObjectId("66746678f7f500b779b1e083"),
-            permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
-            name: "Xóa gói toplist",
-        },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1a06e"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xem gói viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b06b"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Tạo gói viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b06c"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Sửa gói viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b06d"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xóa gói viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1a070"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xem gói bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b06e"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Tạo gói bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b06f"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Sửa gói bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b070"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xóa gói bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1a073"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xem gói mạng",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b071"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Tạo gói mạng",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b072"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Sửa gói mạng",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b073"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xóa gói mạng",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1a075"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xem server",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b074"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Tạo server",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b075"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Sửa server",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f723b779b1b076"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xóa server",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f500b779b1e084"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xem gói toplist",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f500b779b1e081"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Tạo gói toplist",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f500b779b1e082"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Sửa gói toplist",
+        // },
+        // {
+        //     _id: new ObjectId("66746678f7f500b779b1e083"),
+        //     permission_parent_id: new ObjectId("667464b5500bf3ad04c24f47"),
+        //     name: "Xóa gói toplist",
+        // },
 
         // dịch vụ
         {
@@ -456,86 +456,169 @@ const init = async () => {
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
             name: "Xóa dịch vụ website",
         },
+
+        // ITVT dịch vụ
         {
-            _id: new ObjectId("667467eb263fb998b9925a3a"),
+            _id: new ObjectId("667467eb263fb998b9925d49"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xem dịch vụ viết bài content & PR",
+            name: "Xem dịch vụ tên miền ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3a"),
+            _id: new ObjectId("667467eb263fb998b9925d4a"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ viết bài content & PR",
+            name: "Tạo dịch vụ tên miền ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3b"),
+            _id: new ObjectId("667467eb263fb998b9925d4b"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Sửa dịch vụ viết bài content & PR",
+            name: "Sửa dịch vụ tên miền ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3c"),
+            _id: new ObjectId("667467eb263fb998b9925d4c"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xóa dịch vụ viết bài content & PR",
+            name: "Xóa dịch vụ tên miền ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925a3f"),
+            _id: new ObjectId("667467eb263fb998b9925d4d"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xem dịch vụ bảo trì",
+            name: "Xem dịch vụ hosting ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3d"),
+            _id: new ObjectId("667467eb263fb998b9925d4e"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ bảo trì",
+            name: "Tạo dịch vụ hosting ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3e"),
+            _id: new ObjectId("667467eb263fb998b9925d4f"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Sửa dịch vụ bảo trì",
+            name: "Sửa dịch vụ hosting ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d3f"),
+            _id: new ObjectId("667467eb263fb998b9925d50"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xóa dịch vụ bảo trì",
+            name: "Xóa dịch vụ hosting ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925a42"),
+            _id: new ObjectId("667467eb263fb998b9925d51"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xem dịch vụ mạng",
+            name: "Xem dịch vụ SSL ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d40"),
+            _id: new ObjectId("667467eb263fb998b9925d52"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ mạng",
+            name: "Tạo dịch vụ SSL ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d41"),
+            _id: new ObjectId("667467eb263fb998b9925d53"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Sửa dịch vụ mạng",
+            name: "Sửa dịch vụ SSL ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d42"),
+            _id: new ObjectId("667467eb263fb998b9925d54"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xóa dịch vụ mạng",
+            name: "Xóa dịch vụ SSL ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925a45"),
+            _id: new ObjectId("667467eb263fb998b9925d55"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xem dịch vụ toplist",
+            name: "Xem dịch vụ Email ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d43"),
+            _id: new ObjectId("667467eb263fb998b9925d56"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Tạo dịch vụ toplist",
+            name: "Tạo dịch vụ Email ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d44"),
+            _id: new ObjectId("667467eb263fb998b9925d57"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Sửa dịch vụ toplist",
+            name: "Sửa dịch vụ Email ITVT",
         },
         {
-            _id: new ObjectId("667467eb263fb998b9925d45"),
+            _id: new ObjectId("667467eb263fb998b9925d58"),
             permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
-            name: "Xóa dịch vụ toplist",
+            name: "Xóa dịch vụ Email ITVT",
         },
+        
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925a3a"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xem dịch vụ viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3a"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Tạo dịch vụ viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3b"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Sửa dịch vụ viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3c"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xóa dịch vụ viết bài content & PR",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925a3f"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xem dịch vụ bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3d"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Tạo dịch vụ bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3e"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Sửa dịch vụ bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d3f"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xóa dịch vụ bảo trì",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925a42"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xem dịch vụ mạng",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d40"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Tạo dịch vụ mạng",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d41"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Sửa dịch vụ mạng",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d42"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xóa dịch vụ mạng",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925a45"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xem dịch vụ toplist",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d43"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Tạo dịch vụ toplist",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d44"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Sửa dịch vụ toplist",
+        // },
+        // {
+        //     _id: new ObjectId("667467eb263fb998b9925d45"),
+        //     permission_parent_id: new ObjectId("667467eb263fb998b9925d2d"),
+        //     name: "Xóa dịch vụ toplist",
+        // },
         
 
         // hợp đồng

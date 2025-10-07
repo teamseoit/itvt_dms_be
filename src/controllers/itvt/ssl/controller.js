@@ -1,226 +1,245 @@
 const dayjs = require('dayjs');
-
-const SslITVT = require("../../../models/itvt/ssl/model");
+const SslPlans = require("../../../models/plans/ssl/model");
+const ItvtSslServices = require("../../../models/itvt/ssl/model");
 const logAction = require("../../../middleware/actionLogs");
+const {
+  calculateDaysUntilExpiry,
+  determineStatus,
+  getStatusText
+} = require("../../../utils/serviceUtils");
 
-const sslITVTController = {
-  addSslITVT: async(req, res) => {
+const itvtSslServicesController = {
+  getItvtSslServices: async(req, res) => {
     try {
-      const {domain_itvt_id} = req.body;
-      const existingDomainName = await SslITVT.findOne({domain_itvt_id});
-      if (existingDomainName) {
-        return res.status(400).json({message: 'Tên miền đăng ký đã tồn tại! Vui lòng chọn tên miền khác!'});
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const keyword = req.query.keyword || '';
+      const status = req.query.status ? parseInt(req.query.status) : undefined;
+
+      const filter = keyword ? { name: { $regex: keyword, $options: 'i' } } : {};
+
+      if (!Number.isNaN(status) && [1, 2, 3].includes(status)) {
+        const now = new Date();
+        const soon = dayjs().add(30, 'day').toDate();
+        if (status === 1) {
+          filter.expiredAt = { $gt: soon };
+        } else if (status === 2) {
+          filter.expiredAt = { $gte: now, $lte: soon };
+        } else if (status === 3) {
+          filter.expiredAt = { $lt: now };
+        }
       }
 
-      const newSslITVT = new SslITVT(req.body);
-      newSslITVT.expiredAt = new Date(newSslITVT.registeredAt);
-      newSslITVT.expiredAt.setFullYear(newSslITVT.expiredAt.getFullYear() + req.body.periods);
-      const saveSslITVT = await newSslITVT.save();
+      const [sslServices, total] = await Promise.all([
+        ItvtSslServices.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('domainServiceId', 'name')
+          .populate('sslPlanId', 'name')
+          .populate('customerId', 'fullName phoneNumber')
+          .lean(),
+        ItvtSslServices.countDocuments(filter)
+      ]);
+
+      const updatedSslServices = sslServices.map(ssl => {
+        const daysUntilExpiry = calculateDaysUntilExpiry(ssl.expiredAt);
+        const computedStatus = determineStatus(daysUntilExpiry);
+        const statusText = getStatusText(computedStatus, daysUntilExpiry);
+        return { ...ssl, status: computedStatus, daysUntilExpiry, statusText };
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách dịch vụ SSL ITVT thành công.",
+        data: updatedSslServices,
+        meta: {
+          page, limit, totalDocs: total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    } catch(err) {
+      console.error("Error getting ITVT SSL services:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách dịch vụ SSL ITVT."
+      });
+    }
+  },
+
+  addItvtSslServices: async(req, res) => {
+    try {
+      const { domainServiceId, sslPlanId, customerId, periodValue, periodUnit, vatIncluded, registeredAt } = req.body;
+
+      const exists = await ItvtSslServices.findOne({ domainServiceId });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên miền ITVT đã được đăng ký SSL! Vui lòng chọn tên miền khác!"
+        });
+      }
+
+      const plan = await SslPlans.findById(sslPlanId);
+      let totalPrice = 0;
+      let vatPrice = 0;
+
+      if (sslPlanId && plan) {
+        totalPrice = plan.retailPrice * periodValue;
+        vatPrice = vatIncluded ? plan.totalRetailPriceWithVAT * periodValue : plan.purchasePrice * periodValue;
+      }
+
+      const expiredAt = dayjs(registeredAt).add(periodValue, 'year').toDate();
+      const daysUntilExpiry = calculateDaysUntilExpiry(expiredAt);
+      const status = determineStatus(daysUntilExpiry);
+
+      const newSslServices = new ItvtSslServices({
+        ...req.body,
+        totalPrice,
+        vatPrice,
+        registeredAt,
+        expiredAt,
+        daysUntilExpiry,
+        status
+      });
+
+      await newSslServices.save();
+
       await logAction(req.auth._id, 'Dịch vụ SSL ITVT', 'Thêm mới');
-      return res.status(200).json(saveSslITVT);
+      return res.status(201).json({
+        success: true,
+        message: "Thêm dịch vụ SSL ITVT thành công.",
+        data: {
+          ...newSslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error creating ITVT SSL service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi thêm dịch vụ SSL ITVT."
+      });
     }
   },
 
-  getSslITVT: async(req, res) => {
+  getDetailItvtSslServices: async(req, res) => {
     try {
-      let sslITVT = await SslITVT
-        .find()
-        .sort({"createdAt": -1})
-        .populate('domain_itvt_id')
-        .populate('ssl_plan_id');
-      
-      for (const item of sslITVT) {
-        const domain_plan_id = item.domain_itvt_id.domain_plan_id;
-        const domain_supplier_id = item.domain_itvt_id.supplier_id;
-        const ssl_supplier_id = item.ssl_plan_id.supplier_id;
+      const sslServices = await ItvtSslServices.findById(req.params.id);
+      if (!sslServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ SSL ITVT."
+        });
+      }
+      const daysUntilExpiry = calculateDaysUntilExpiry(sslServices.expiredAt);
 
-        try {
-          sslITVT = await SslITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                domain_plan_id: domain_plan_id,
-                domain_supplier_id: domain_supplier_id,
-                ssl_supplier_id: ssl_supplier_id,
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết dịch vụ SSL ITVT thành công.",
+        data: {
+          ...sslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(sslServices.status, daysUntilExpiry)
+        }
+      });
+    } catch(err) {
+      console.error("Error getting ITVT SSL service detail:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy chi tiết dịch vụ SSL ITVT."
+      });
+    }
+  },
+
+  updateItvtSslServices: async(req, res) => {
+    try {
+      const sslServices = await ItvtSslServices.findById(req.params.id);
+      if (!sslServices) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ SSL ITVT để cập nhật."
+        });
+      }
+
+      if (req.body.periodValue) {
+        if (req.body.expiredAt) {
+          sslServices.expiredAt = dayjs(new Date(req.body.expiredAt))
+            .add(req.body.periodValue, 'year')
+            .toDate();
+        } else {
+          const startDate = sslServices.expiredAt && sslServices.status !== 3
+            ? sslServices.expiredAt
+            : new Date();
+          sslServices.expiredAt = dayjs(startDate)
+            .add(req.body.periodValue, 'year')
+            .toDate();
+        }
+        sslServices.periodValue = req.body.periodValue;
+
+        const plan = await SslPlans.findById(sslServices.sslPlanId);
+        sslServices.totalPrice = plan.retailPrice * req.body.periodValue;
+
+        if (req.body.vatIncluded) {
+          sslServices.vatPrice = plan.totalRetailPriceWithVAT * req.body.periodValue;
+        } else {
+          sslServices.vatPrice = plan.purchasePrice * req.body.periodValue;
         }
       }
 
-      sslITVT = await SslITVT.find().sort({"createdAt": -1})
-        .populate('domain_itvt_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      
-      return res.status(200).json(sslITVT);
+      Object.keys(req.body).forEach(key => {
+        if (key !== 'periodValue' && key !== 'expiredAt') {
+          sslServices[key] = req.body[key];
+        }
+      });
+
+      const daysUntilExpiry = calculateDaysUntilExpiry(sslServices.expiredAt);
+      sslServices.status = determineStatus(daysUntilExpiry);
+      await sslServices.save();
+
+      await logAction(req.auth._id, 'Dịch vụ SSL ITVT', 'Cập nhật', `/itvt/dich-vu/ssl/${req.params.id}`);
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật dịch vụ SSL ITVT thành công.",
+        data: {
+          ...sslServices.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(sslServices.status, daysUntilExpiry)
+        }
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error updating ITVT SSL service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi cập nhật dịch vụ SSL ITVT."
+      });
     }
   },
 
-  getDetailSslITVT: async(req, res) => {
+  deleteItvtSslServices: async(req, res) => {
     try {
-      const sslITVT = await SslITVT.findById(req.params.id)
-        .populate('domain_itvt_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
+      const deleted = await ItvtSslServices.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ SSL ITVT để xóa."
+        });
+      }
 
-      return res.status(200).json(sslITVT);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteSslITVT: async(req, res) => {
-    try {
-      await SslITVT.findByIdAndDelete(req.params.id);
       await logAction(req.auth._id, 'Dịch vụ SSL ITVT', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
+      return res.status(200).json({
+        success: true,
+        message: "Xóa dịch vụ SSL ITVT thành công."
+      });
     } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      console.error("Error deleting ITVT SSL service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi xóa dịch vụ SSL ITVT."
+      });
     }
   },
-
-  updateSslITVT: async(req, res) => {
-    try {
-      const sslITVT = await SslITVT.findById(req.params.id);
-      if (req.body.periods) {
-        const currentDate = new Date();
-        const expiredAt = currentDate.setFullYear(currentDate.getFullYear() + req.body.periods);
-        await sslITVT.updateOne({$set: {expiredAt: expiredAt, status: 1}});
-      }
-
-      if (req.body.before_payment) {
-        await sslITVT.updateOne({$set: {before_payment: true}});
-      }
-      
-      await sslITVT.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Dịch vụ SSL ITVT', 'Cập nhật', `/trang-chu/itvt/cap-nhat-ssl-itvt/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getSslITVTExpired: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var sslITVTExpired = await SslITVT.find(
-        {
-          expiredAt: {$lte: currentDate}
-        }
-      );
-
-      for (const item of sslITVTExpired) {
-        try {
-          sslITVTExpired = await SslITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 3
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
-        }
-      }
-
-      sslITVTExpired = await SslITVT
-        .find(
-          {
-            expiredAt: {$lte: currentDate}
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_itvt_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslITVTExpired);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  getSslITVTExpiring: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var dateExpired = dayjs(currentDate).add(30, 'day');
-      var sslITVTExpiring = await SslITVT.find(
-        {
-          expiredAt: {
-            $gte: dayjs(currentDate).startOf('day').toDate(),
-            $lte: dayjs(dateExpired).endOf('day').toDate()
-          }
-        }
-      );
-
-      for (const item of sslITVTExpiring) {
-        try {
-          sslITVTExpiring = await SslITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 2
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
-        }
-      }
-
-      sslITVTExpiring = await SslITVT
-        .find(
-          {
-            expiredAt: {
-              $gte: dayjs(currentDate).startOf('day').toDate(),
-              $lte: dayjs(dateExpired).endOf('day').toDate()
-            }
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_itvt_id')
-        .populate('ssl_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('domain_plan_id')
-        .populate('domain_supplier_id', 'name company')
-        .populate('ssl_supplier_id', 'name company');
-      
-      return res.status(200).json(sslITVTExpiring);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  }
 }
 
-module.exports = sslITVTController;
+module.exports = itvtSslServicesController;

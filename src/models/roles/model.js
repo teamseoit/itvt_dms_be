@@ -519,101 +519,200 @@ const init = async () => {
         permission_id: new ObjectId("667467eb263fb998b9925d48"),
         group_user_id: new ObjectId("6684196550a34692df218d8d"),
       },
+
+      // ITVT dịch vụ
+      // xem dịch vụ tên miền ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9aa"),
+        permission_id: new ObjectId("667467eb263fb998b9925d49"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ tên miền ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9ab"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4a"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ tên miền ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9ac"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4b"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ tên miền ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9ad"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4c"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xem dịch vụ hosting ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9ae"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4d"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ hosting ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9af"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4e"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ hosting ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b0"),
+        permission_id: new ObjectId("667467eb263fb998b9925d4f"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ hosting ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b1"),
+        permission_id: new ObjectId("667467eb263fb998b9925d50"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xem dịch vụ SSL ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b2"),
+        permission_id: new ObjectId("667467eb263fb998b9925d51"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ SSL ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b3"),
+        permission_id: new ObjectId("667467eb263fb998b9925d52"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ SSL ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b4"),
+        permission_id: new ObjectId("667467eb263fb998b9925d53"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ SSL ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b5"),
+        permission_id: new ObjectId("667467eb263fb998b9925d54"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xem dịch vụ Email ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b6"),
+        permission_id: new ObjectId("667467eb263fb998b9925d55"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // tạo dịch vụ Email ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b7"),
+        permission_id: new ObjectId("667467eb263fb998b9925d56"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // sửa dịch vụ Email ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b8"),
+        permission_id: new ObjectId("667467eb263fb998b9925d57"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
+      // xóa dịch vụ Email ITVT
+      {
+        _id: new ObjectId("668653c9e55c5173ec41c9b9"),
+        permission_id: new ObjectId("667467eb263fb998b9925d58"),
+        group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      },
       
 
 
       
 
-      //Tạo dịch vụ viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c98d"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3a"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c98f"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3b"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ viết bài content & PR
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c991"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3c"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo dịch vụ bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c993"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3d"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c995"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3e"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c997"),
-        permission_id: new ObjectId("667467eb263fb998b9925d3f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ bảo trì
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a997"),
-        permission_id: new ObjectId("667467eb263fb998b9925a3f"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo dịch vụ sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c999"),
-        permission_id: new ObjectId("667467eb263fb998b9925d40"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c99b"),
-        permission_id: new ObjectId("667467eb263fb998b9925d41"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c99d"),
-        permission_id: new ObjectId("667467eb263fb998b9925d42"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      // Xem dịch vụ sim 4G
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a99d"),
-        permission_id: new ObjectId("667467eb263fb998b9925a42"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Tạo dịch vụ toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c99f"),
-        permission_id: new ObjectId("667467eb263fb998b9925d43"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Sửa dịch vụ toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c9a1"),
-        permission_id: new ObjectId("667467eb263fb998b9925d44"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xóa dịch vụ toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ec41c9a3"),
-        permission_id: new ObjectId("667467eb263fb998b9925d45"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
-      //Xem dịch vụ toplist
-      {
-        _id: new ObjectId("668653c9e55c5173ec41a9a3"),
-        permission_id: new ObjectId("667467eb263fb998b9925a45"),
-        group_user_id: new ObjectId("6684196550a34692df218d8d"),
-      },
+      // chưa làm
+      // //Tạo dịch vụ viết bài content & PR
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c98d"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3a"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Sửa dịch vụ viết bài content & PR
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c98f"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3b"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xóa dịch vụ viết bài content & PR
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c991"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3c"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Tạo dịch vụ bảo trì
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c993"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3d"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Sửa dịch vụ bảo trì
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c995"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3e"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xóa dịch vụ bảo trì
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c997"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d3f"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xem dịch vụ bảo trì
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41a997"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925a3f"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Tạo dịch vụ sim 4G
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c999"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d40"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Sửa dịch vụ sim 4G
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c99b"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d41"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xóa dịch vụ sim 4G
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c99d"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d42"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // // Xem dịch vụ sim 4G
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41a99d"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925a42"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Tạo dịch vụ toplist
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c99f"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d43"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Sửa dịch vụ toplist
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c9a1"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d44"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xóa dịch vụ toplist
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41c9a3"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925d45"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
+      // //Xem dịch vụ toplist
+      // {
+      //   _id: new ObjectId("668653c9e55c5173ec41a9a3"),
+      //   permission_id: new ObjectId("667467eb263fb998b9925a45"),
+      //   group_user_id: new ObjectId("6684196550a34692df218d8d"),
+      // },
       
 
       // hợp đồng

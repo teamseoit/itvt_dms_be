@@ -1,207 +1,274 @@
 const dayjs = require('dayjs');
-
-const DomainITVT = require("../../../models/itvt/domain/model");
+const DomainPlans = require("../../../models/plans/domain/model");
+const ItvtDomainServices = require("../../../models/itvt/domain/model");
+const ItvtEmailServices = require("../../../models/itvt/email/model");
+const ItvtHostingServices = require("../../../models/itvt/hosting/model");
+const ItvtSslServices = require("../../../models/itvt/ssl/model");
 const logAction = require("../../../middleware/actionLogs");
+const {
+  calculateDaysUntilExpiry,
+  determineStatus,
+  getStatusText
+} = require("../../../utils/serviceUtils");
 
-const domainITVTController = {
-  addDomainITVT: async(req, res) => {
+const itvtDomainServicesController = {
+  getItvtDomainServices: async (req, res) => {
     try {
-      const {name} = req.body;
-      const existingName = await DomainITVT.findOne({name});
-      if (existingName) {
-        if (existingName.name === name) {
-          return res.status(400).json({message: 'Tên miền đăng ký đã tồn tại! Vui lòng nhập tên miền khác!'});
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const keyword = req.query.keyword || '';
+      const status = req.query.status ? parseInt(req.query.status) : undefined;
+
+      const filter = keyword ? { name: { $regex: keyword, $options: 'i' } } : {};
+      
+      if (!Number.isNaN(status) && [1, 2, 3].includes(status)) {
+        const now = new Date();
+        const soon = dayjs().add(30, 'day').toDate();
+        if (status === 1) {
+          filter.expiredAt = { $gt: soon };
+        } else if (status === 2) {
+          filter.expiredAt = { $gte: now, $lte: soon };
+        } else if (status === 3) {
+          filter.expiredAt = { $lt: now };
         }
       }
 
-      const newDomainITVT = new DomainITVT(req.body);
-      newDomainITVT.expiredAt = new Date(newDomainITVT.registeredAt);
-      newDomainITVT.expiredAt.setFullYear(newDomainITVT.expiredAt.getFullYear() + req.body.periods);
-      await logAction(req.auth._id, 'Tên miền ITVT', 'Thêm mới');
-      const saveDomainITVT = await newDomainITVT.save();
-      return res.status(200).json(saveDomainITVT);
-    } catch(err) {
-      console.error(err)
-      return res.status(500).send(err.message);
+      const [domainServices, total] = await Promise.all([
+        ItvtDomainServices.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('domainPlanId', 'name extension')
+          .populate('serverPlanId', 'name ipAddress')
+          .populate('customerId', 'fullName phoneNumber')
+          .lean(),
+        ItvtDomainServices.countDocuments(filter)
+      ]);
+
+      const updatedDomainServices = domainServices.map(domain => {
+        const daysUntilExpiry = calculateDaysUntilExpiry(domain.expiredAt);
+        const computedStatus = determineStatus(daysUntilExpiry);
+        const statusText = getStatusText(computedStatus, daysUntilExpiry);
+        return { ...domain, status: computedStatus, daysUntilExpiry, statusText };
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách dịch vụ tên miền ITVT thành công.",
+        data: updatedDomainServices,
+        meta: {
+          page, limit, totalDocs: total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    } catch (err) {
+      console.error("Error getting ITVT domain services:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách dịch vụ tên miền ITVT."
+      });
     }
   },
 
-  getDomainITVT: async(req, res) => {
+  addItvtDomainServices: async (req, res) => {
     try {
-      let domainITVT = await DomainITVT.find().sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone');        
+      const { name, registeredAt, periodValue, domainPlanId, vatIncluded } = req.body;
 
-      for (const item of domainITVT) {
-        const supplier_id = item.domain_plan_id.supplier_id;
-        try {
-          domainITVT = await DomainITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                supplier_id: supplier_id
-              }
-            },
-            { new: true }
-          );
-        } catch (err) {
-          console.error(err);
-          return res.status(500).send(err.message);
+      const exists = await ItvtDomainServices.findOne({ name });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Tên miền ITVT đăng ký đã tồn tại! Vui lòng nhập tên miền khác!"
+        });
+      }
+
+      const plan = await DomainPlans.findById(domainPlanId);
+      let retailPrice = 0;
+      let vatPrice = 0;
+
+      if (domainPlanId && plan) {
+        retailPrice = plan.retailPrice;
+        vatPrice = vatIncluded ? plan.vatPrice : plan.purchasePrice;
+      }
+
+      const totalPrice = retailPrice * periodValue;
+      vatPrice = vatPrice * periodValue;
+
+      const expiredAt = dayjs(registeredAt).add(periodValue, 'year').toDate();
+      const daysUntilExpiry = calculateDaysUntilExpiry(expiredAt);
+      const status = determineStatus(daysUntilExpiry);
+
+      const newDomain = await ItvtDomainServices.create({
+        ...req.body,
+        expiredAt,
+        status,
+        totalPrice,
+        vatPrice
+      });
+
+      await logAction(req.auth._id, 'Dịch vụ Tên miền ITVT', 'Thêm mới');
+
+      return res.status(201).json({
+        success: true,
+        message: "Thêm dịch vụ tên miền ITVT thành công.",
+        data: {
+          ...newDomain.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(status, daysUntilExpiry)
+        }
+      });
+    } catch (err) {
+      console.error("Error creating ITVT domain service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi thêm dịch vụ tên miền ITVT."
+      });
+    }
+  },
+
+  getDetailItvtDomainServices: async (req, res) => {
+    try {
+      const domain = await ItvtDomainServices.findById(req.params.id);
+      if (!domain) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ tên miền ITVT."
+        });
+      }
+
+      const daysUntilExpiry = calculateDaysUntilExpiry(domain.expiredAt);
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy chi tiết dịch vụ tên miền ITVT thành công.",
+        data: {
+          ...domain.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(domain.status, daysUntilExpiry)
+        }
+      });
+    } catch (err) {
+      console.error("Error fetching ITVT domain service details:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy chi tiết dịch vụ tên miền ITVT."
+      });
+    }
+  },
+
+  updateItvtDomainServices: async (req, res) => {
+    try {
+      const domain = await ItvtDomainServices.findById(req.params.id);
+      if (!domain) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ tên miền ITVT để cập nhật."
+        });
+      }
+
+      if (req.body.periodValue) {
+        if (req.body.expiredAt) {
+          domain.expiredAt = dayjs(new Date(req.body.expiredAt))
+            .add(req.body.periodValue, 'year')
+            .toDate();
+        } else {
+          const startDate = domain.expiredAt && domain.status !== 3
+            ? domain.expiredAt
+            : new Date();
+          
+          domain.expiredAt = dayjs(startDate)
+            .add(req.body.periodValue, domain.periodUnit.toLowerCase())
+            .toDate();
+        }
+        domain.periodValue = req.body.periodValue;
+        const plan = await DomainPlans.findById(domain.domainPlanId);
+        domain.totalPrice = plan.retailPrice * req.body.periodValue;
+        if (req.body.vatIncluded) {
+          domain.vatPrice = plan.vatPrice * req.body.periodValue;
+        } else {
+          domain.vatPrice = plan.purchasePrice * req.body.periodValue;
         }
       }
 
-      domainITVT = await DomainITVT.find().sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
+      Object.keys(req.body).forEach(key => {
+        if (key !== 'periodValue' && key !== 'expiredAt') {
+          domain[key] = req.body[key];
+        }
+      });
 
-      return res.status(200).json(domainITVT);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      const daysUntilExpiry = calculateDaysUntilExpiry(domain.expiredAt);
+      domain.status = determineStatus(daysUntilExpiry);
+      await domain.save();
+
+      await logAction(req.auth._id, 'Dịch vụ Tên miền ITVT', 'Cập nhật', `/itvt/dich-vu/ten-mien/${req.params.id}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật dịch vụ tên miền ITVT thành công.",
+        data: {
+          ...domain.toObject(),
+          daysUntilExpiry,
+          statusText: getStatusText(domain.status, daysUntilExpiry)
+        }
+      });
+    } catch (err) {
+      console.error("Error updating ITVT domain service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi cập nhật dịch vụ tên miền ITVT."
+      });
     }
   },
 
-  getDetailDomainITVT: async(req, res) => {
+  deleteItvtDomainServices: async (req, res) => {
     try {
-      const domainITVT = await DomainITVT.findById(req.params.id)
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
-
-      return res.status(200).json(domainITVT);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  deleteDomainITVT: async(req, res) => {
-    try {
-      await DomainITVT.findByIdAndDelete(req.params.id);
-      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Xóa');
-      return res.status(200).json("Xóa thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
-
-  updateDomainITVT: async(req, res) => {
-    try {
-      const domainITVT = await DomainITVT.findById(req.params.id);
-      if (req.body.periods) {
-        const currentDate = new Date();
-        const expiredAt = currentDate.setFullYear(currentDate.getFullYear() + req.body.periods);
-        await DomainITVT.updateOne({$set: {expiredAt: expiredAt, status: 1}});
+      const domainId = req.params.id;
+      
+      // Kiểm tra xem domain có tồn tại không
+      const domain = await ItvtDomainServices.findById(domainId);
+      if (!domain) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dịch vụ tên miền ITVT để xóa."
+        });
       }
 
-      await domainITVT.updateOne({$set: req.body});
-      await logAction(req.auth._id, 'Dịch vụ Tên miền', 'Cập nhật', `/trang-chu/itvt/cap-nhat-ten-mien-itvt/${req.params.id}`);
-      return res.status(200).json("Cập nhật thành công!");
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
-    }
-  },
+      // Kiểm tra xem domain có đang được sử dụng trong các service khác không
+      const [emailServices, hostingServices, sslServices] = await Promise.all([
+        ItvtEmailServices.findOne({ domainServiceId: domainId }),
+        ItvtHostingServices.findOne({ domainServiceId: domainId }),
+        ItvtSslServices.findOne({ domainServiceId: domainId })
+      ]);
 
-  getDomainITVTExpired: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      // tìm những domain service hết hạn
-      var domainITVTExpired = await DomainITVT.find(
-        {
-          expiredAt: {$lte: currentDate}
-        }
-      );
-
-      for (const item of domainITVTExpired) {
-        try {
-          // cập nhập bằng 3
-          domainITVTExpired = await DomainITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 3
-              }
-            },
-            { new: true }
-          );
-        } catch (error) {
-          res.status(500).json(error);
-        }
+      if (emailServices || hostingServices || sslServices) {
+        const usedInServices = [];
+        if (emailServices) usedInServices.push('Email');
+        if (hostingServices) usedInServices.push('Hosting');
+        if (sslServices) usedInServices.push('SSL');
+        
+        return res.status(400).json({
+          success: false,
+          message: `Không thể xóa tên miền này vì đang được sử dụng trong dịch vụ: ${usedInServices.join(', ')}.`
+        });
       }
 
-      domainITVTExpired = await DomainITVT
-        .find(
-          {
-            expiredAt: {$lte: currentDate}
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
+      // Nếu không có service nào sử dụng domain này, tiến hành xóa
+      const deleted = await ItvtDomainServices.findByIdAndDelete(domainId);
 
-      res.status(200).json(domainITVTExpired);
-    } catch(err) {
-      res.status(500).json(err);
-    }
-  },
-
-  getDomainITVTExpiring: async(req, res) => {
-    try {
-      var currentDate = new Date();
-      var dateExpired = dayjs(currentDate).add(30, 'day');
-      var domainITVTExpiring = await DomainITVT.find(
-        {
-          expiredAt: {
-            $gte: dayjs(currentDate).startOf('day').toDate(),
-            $lte: dayjs(dateExpired).endOf('day').toDate()
-          }
-        }
-      );
-
-      for (const item of domainITVTExpiring) {
-        try {
-          domainITVTExpiring = await DomainITVT.findByIdAndUpdate(
-            item._id,
-            {
-              $set: {
-                status: 2
-              }
-            },
-            { new: true }
-          );
-        } catch (error) {
-          res.status(500).json(error);
-        }
-      }
-
-      domainITVTExpiring = await DomainITVT
-        .find(
-          {
-            expiredAt: {
-              $gte: dayjs(currentDate).startOf('day').toDate(),
-              $lte: dayjs(dateExpired).endOf('day').toDate()
-            }
-          }
-        )
-        .sort({"createdAt": -1})
-        .populate('domain_plan_id')
-        .populate('server_plan_id', 'name')
-        .populate('customer_id', 'fullname gender email phone')
-        .populate('supplier_id', 'name company');
-
-      return res.status(200).json(domainITVTExpiring);
-    } catch(err) {
-      console.error(err);
-      return res.status(500).send(err.message);
+      await logAction(req.auth._id, 'Dịch vụ Tên miền ITVT', 'Xóa');
+      return res.status(200).json({
+        success: true,
+        message: "Xóa dịch vụ tên miền ITVT thành công."
+      });
+    } catch (err) {
+      console.error("Error deleting ITVT domain service:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi xóa dịch vụ tên miền ITVT."
+      });
     }
   }
-}
+};
 
-module.exports = domainITVTController;
+module.exports = itvtDomainServicesController;

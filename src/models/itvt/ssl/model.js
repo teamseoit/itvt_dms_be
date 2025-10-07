@@ -1,23 +1,30 @@
 const mongoose = require("mongoose");
 
-const sslITVTSchema = new mongoose.Schema({
-  domain_itvt_id: {
+const itvtSslServicesSchema = new mongoose.Schema({
+  domainServiceId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "DomainITVT"
+    ref: "ItvtDomainServices"
   },
-  ssl_plan_id: {
+  sslPlanId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "SslPlans"
+    ref: "SSLPlans"
   },
-  periods: {
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Customers",
+    index: true
+  },
+  periodValue: {
     type: Number,
     required: true
   },
-  customer_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Customers",
-    index: true,
-    required: true
+  periodUnit: {
+    type: String,
+    default: "năm",
+  },
+  vatIncluded: {
+    type: Boolean,
+    default: false
   },
   status: {
     type: Number,
@@ -29,19 +36,19 @@ const sslITVTSchema = new mongoose.Schema({
   expiredAt: {
     type: Date
   },
-  domain_plan_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "DomainPlans"
+  daysUntilExpiry: {
+    type: Number,
+    default: null,
   },
-  domain_supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
+  totalPrice: {
+    type: Number,
+    default: 0,
   },
-  ssl_supplier_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Suppliers"
-  },
+  vatPrice: {
+    type: Number,
+    default: 0,
+  }
 }, {timestamps: true});
 
-let SslITVT = mongoose.model("SslITVT", sslITVTSchema);
-module.exports = SslITVT;
+let ItvtSslServices = mongoose.model("ItvtSslServices", itvtSslServicesSchema);
+module.exports = ItvtSslServices;

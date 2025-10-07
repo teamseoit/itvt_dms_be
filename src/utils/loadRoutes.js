@@ -42,6 +42,12 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
   const itvtDomainRoutes = require("../routes/itvt/domain/domain");
   const itvtSSLRoutes = require("../routes/itvt/ssl/ssl");
 
+  // dịch vụ itvt services
+  const itvtDomainServicesRoutes = require("../routes/itvt/domain/domain");
+  const itvtHostingServicesRoutes = require("../routes/itvt/hosting/hosting");
+  const itvtSslServicesRoutes = require("../routes/itvt/ssl/ssl");
+  const itvtEmailServicesRoutes = require("../routes/itvt/email/email");
+
   // dịch vụ
   const domainServicesRoutes = require("../routes/services/domain/domain");
   const hostingServicesRoutes = require("../routes/services/hosting/hosting");
@@ -103,6 +109,12 @@ module.exports = function loadRoutes(app, verifyAccessToken) {
     // dich vu itvt
     { path: "/api/itvt/domain", handler: itvtDomainRoutes, protected: true },
     { path: "/api/itvt/ssl", handler: itvtSSLRoutes, protected: true },
+
+    // dịch vụ itvt services
+    { path: "/api/itvt/domain", handler: itvtDomainServicesRoutes, protected: true },
+    { path: "/api/itvt/hosting", handler: itvtHostingServicesRoutes, protected: true },
+    { path: "/api/itvt/ssl", handler: itvtSslServicesRoutes, protected: true },
+    { path: "/api/itvt/email", handler: itvtEmailServicesRoutes, protected: true },
 
     // dịch vụ
     { path: "/api/services/domain", handler: domainServicesRoutes, protected: true },

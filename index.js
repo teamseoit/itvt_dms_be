@@ -13,6 +13,7 @@ const verifyAccessToken = require("./src/middleware/verifyAccessToken");
 const initAll = require("./src/init");
 const loadRoutes = require("./src/utils/loadRoutes");
 const { updateAllServiceStatuses, sendConsolidatedNotifications } = require('./src/utils/serviceStatusUpdater');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -48,15 +49,50 @@ const startServer = async () => {
       // Cron: chạy mỗi ngày lúc 00:00
       // Thứ tự: cập nhật status -> nếu có dịch vụ cần gửi thì gửi email (gộp theo tên miền)
       cron.schedule('0 0 * * *', async () => {
+        const startTime = new Date();
+        console.log(`[CRON] ===== Starting service status update at ${startTime.toISOString()} =====`);
+        
         try {
-          console.log('[CRON] Start service status update at 00:00');
+          // Kiểm tra kết nối database trước khi chạy
+          if (!mongoose.connection.readyState) {
+            throw new Error('Database connection not ready');
+          }
+          
+          console.log('[CRON] Database connection verified');
+          
+          // Cập nhật status tất cả dịch vụ
+          console.log('[CRON] Updating service statuses...');
           const result = await updateAllServiceStatuses(false);
-          console.log('[CRON] Updated services:', result);
+          console.log('[CRON] Updated services:', JSON.stringify(result, null, 2));
 
+          // Gửi thông báo email
+          console.log('[CRON] Sending notifications...');
           const notify = await sendConsolidatedNotifications();
-          console.log('[CRON] Notification result:', notify);
+          console.log('[CRON] Notification result:', JSON.stringify(notify, null, 2));
+          
+          const endTime = new Date();
+          const duration = endTime - startTime;
+          console.log(`[CRON] ===== Completed in ${duration}ms at ${endTime.toISOString()} =====`);
+          
         } catch (err) {
           console.error('[CRON] Error running domain status cron:', err);
+          console.error('[CRON] Error stack:', err.stack);
+          
+          // Gửi email báo lỗi cho admin
+          try {
+            const sendEmail = require('./src/utils/sendEmail');
+            await sendEmail(
+              config.EMAIL_TO || config.DOMAIN_ALERT_RECIPIENTS,
+              '[DMS ERROR] Cronjob Failed',
+              `<h2>Cronjob Error Report</h2>
+               <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+               <p><strong>Error:</strong> ${err.message}</p>
+               <pre>${err.stack}</pre>`
+            );
+            console.log('[CRON] Error notification email sent');
+          } catch (emailErr) {
+            console.error('[CRON] Failed to send error notification email:', emailErr);
+          }
         }
       }, { timezone: 'Asia/Ho_Chi_Minh' });
     });

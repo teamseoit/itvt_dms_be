@@ -143,33 +143,50 @@ function buildConsolidatedHtml(payload) {
 }
 
 async function sendConsolidatedNotifications() {
-  const payload = await fetchExpiringAndExpired();
+  try {
+    console.log('[NOTIFICATION] Fetching expiring and expired services...');
+    const payload = await fetchExpiringAndExpired();
 
-  const totalItems = payload.domains.expiring.length + payload.domains.expired.length
-    + payload.email.expiring.length + payload.email.expired.length
-    + payload.hosting.expiring.length + payload.hosting.expired.length
-    + payload.ssl.expiring.length + payload.ssl.expired.length;
+    const totalItems = payload.domains.expiring.length + payload.domains.expired.length
+      + payload.email.expiring.length + payload.email.expired.length
+      + payload.hosting.expiring.length + payload.hosting.expired.length
+      + payload.ssl.expiring.length + payload.ssl.expired.length;
 
-  if (totalItems === 0) {
-    return { sent: false, reason: 'No items to notify' };
+    console.log(`[NOTIFICATION] Found ${totalItems} items to notify`);
+
+    if (totalItems === 0) {
+      console.log('[NOTIFICATION] No items to notify');
+      return { sent: false, reason: 'No items to notify' };
+    }
+
+    const recipientsEnv = config.DOMAIN_ALERT_RECIPIENTS || config.EMAIL_TO || '';
+    console.log(`[NOTIFICATION] Recipients config: ${recipientsEnv}`);
+    
+    const recipients = recipientsEnv.split(',').map(s => s.trim()).filter(Boolean);
+    if (recipients.length === 0) {
+      console.error('[NOTIFICATION] No recipients configured');
+      return { sent: false, reason: 'No recipients configured' };
+    }
+
+    console.log(`[NOTIFICATION] Sending to recipients: ${recipients.join(', ')}`);
+
+    const subject = '[DMS] Cảnh báo sắp hết hạn / đã hết hạn (Tên miền + Dịch vụ)';
+    const html = buildConsolidatedHtml(payload);
+    
+    console.log('[NOTIFICATION] Sending email...');
+    await sendEmail(recipients.join(','), subject, html);
+    console.log('[NOTIFICATION] Email sent successfully');
+
+    return { sent: true, to: recipients, counts: {
+      domains: { expiring: payload.domains.expiring.length, expired: payload.domains.expired.length },
+      email: { expiring: payload.email.expiring.length, expired: payload.email.expired.length },
+      hosting: { expiring: payload.hosting.expiring.length, expired: payload.hosting.expired.length },
+      ssl: { expiring: payload.ssl.expiring.length, expired: payload.ssl.expired.length },
+    } };
+  } catch (error) {
+    console.error('[NOTIFICATION] Error in sendConsolidatedNotifications:', error);
+    throw error;
   }
-
-  const recipientsEnv = config.DOMAIN_ALERT_RECIPIENTS || config.EMAIL_TO || '';
-  const recipients = recipientsEnv.split(',').map(s => s.trim()).filter(Boolean);
-  if (recipients.length === 0) {
-    return { sent: false, reason: 'No recipients configured' };
-  }
-
-  const subject = '[DMS] Cảnh báo sắp hết hạn / đã hết hạn (Tên miền + Dịch vụ)';
-  const html = buildConsolidatedHtml(payload);
-  await sendEmail(recipients.join(','), subject, html);
-
-  return { sent: true, to: recipients, counts: {
-    domains: { expiring: payload.domains.expiring.length, expired: payload.domains.expired.length },
-    email: { expiring: payload.email.expiring.length, expired: payload.email.expired.length },
-    hosting: { expiring: payload.hosting.expiring.length, expired: payload.hosting.expired.length },
-    ssl: { expiring: payload.ssl.expiring.length, expired: payload.ssl.expired.length },
-  } };
 }
 
 async function updateAllServiceStatuses(sendNotifications = false) {

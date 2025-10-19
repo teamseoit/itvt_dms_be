@@ -4,13 +4,59 @@ const EmailServices = require("../../models/services/email/model");
 const SslServices = require("../../models/services/ssl/model");
 const WebsiteServices = require("../../models/services/website/model");
 
+// Import các model plans để tính purchasePrice
+const DomainPlans = require("../../models/plans/domain/model");
+const HostingPlans = require("../../models/plans/hosting/model");
+const EmailPlans = require("../../models/plans/email/model");
+const SslPlans = require("../../models/plans/ssl/model");
+
 // Mapping dịch vụ với ID và thông tin
 const SERVICES_MAP = {
-  1: { name: 'Domain', model: DomainServices, priceField: 'totalPrice', dateField: 'registeredAt' },
-  2: { name: 'Hosting', model: HostingServices, priceField: 'totalPrice', dateField: 'registeredAt' },
-  3: { name: 'Email', model: EmailServices, priceField: 'totalPrice', dateField: 'registeredAt' },
-  4: { name: 'SSL', model: SslServices, priceField: 'totalPrice', dateField: 'registeredAt' },
-  5: { name: 'Website', model: WebsiteServices, priceField: 'price', dateField: 'createdAt' }
+  1: { 
+    name: 'Domain', 
+    model: DomainServices, 
+    priceField: 'totalPrice', 
+    purchasePriceField: 'domainPlanId.purchasePrice',
+    dateField: 'registeredAt',
+    planRef: 'domainPlanId',
+    planModel: 'DomainPlans'
+  },
+  2: { 
+    name: 'Hosting', 
+    model: HostingServices, 
+    priceField: 'totalPrice', 
+    purchasePriceField: 'hostingPlanId.purchasePrice',
+    dateField: 'registeredAt',
+    planRef: 'hostingPlanId',
+    planModel: 'HostingPlans'
+  },
+  3: { 
+    name: 'Email', 
+    model: EmailServices, 
+    priceField: 'totalPrice', 
+    purchasePriceField: 'emailPlanId.purchasePrice',
+    dateField: 'registeredAt',
+    planRef: 'emailPlanId',
+    planModel: 'EmailPlans'
+  },
+  4: { 
+    name: 'SSL', 
+    model: SslServices, 
+    priceField: 'totalPrice', 
+    purchasePriceField: 'sslPlanId.purchasePrice',
+    dateField: 'registeredAt',
+    planRef: 'sslPlanId',
+    planModel: 'SslPlans'
+  },
+  5: { 
+    name: 'Website', 
+    model: WebsiteServices, 
+    priceField: 'price', 
+    purchasePriceField: null, // Website không có purchasePrice
+    dateField: 'createdAt',
+    planRef: null,
+    planModel: null
+  }
 };
 
 // Helper function để lấy danh sách dịch vụ
@@ -135,29 +181,79 @@ async function getMonthlyExpenseReport(res, start, end, month, selectedServiceId
 
   const results = {};
   let totalExpense = 0;
+  let totalPurchaseExpense = 0;
 
   // Sử dụng Promise.all để tối ưu hiệu suất
   const servicePromises = services.map(async (service) => {
-    const aggregation = await service.model.aggregate([
-      {
-        $match: {
-          [service.dateField]: { $gte: start, $lt: end }
+    let aggregation;
+    
+    if (service.planRef && service.planModel) {
+      // Có purchasePrice - cần join với plans
+      const planModel = require(`../../models/plans/${service.planModel.toLowerCase().replace('plans', '')}/model`);
+      
+      aggregation = await service.model.aggregate([
+        {
+          $match: {
+            [service.dateField]: { $gte: start, $lt: end }
+          }
+        },
+        {
+          $lookup: {
+            from: service.planModel.toLowerCase(),
+            localField: service.planRef,
+            foreignField: '_id',
+            as: 'plan'
+          }
+        },
+        {
+          $unwind: {
+            path: '$plan',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalPrice: { $sum: `$${service.priceField}` },
+            totalPurchasePrice: { 
+              $sum: { 
+                $ifNull: ['$plan.purchasePrice', 0] 
+              } 
+            },
+            count: { $sum: 1 }
+          }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          totalPrice: { $sum: `$${service.priceField}` },
-          count: { $sum: 1 }
+      ]);
+    } else {
+      // Không có purchasePrice (như Website)
+      aggregation = await service.model.aggregate([
+        {
+          $match: {
+            [service.dateField]: { $gte: start, $lt: end }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalPrice: { $sum: `$${service.priceField}` },
+            totalPurchasePrice: { $sum: 0 },
+            count: { $sum: 1 }
+          }
         }
-      }
-    ]);
+      ]);
+    }
 
-    const serviceData = aggregation.length > 0 ? aggregation[0] : { totalPrice: 0, count: 0 };
+    const serviceData = aggregation.length > 0 ? aggregation[0] : { 
+      totalPrice: 0, 
+      totalPurchasePrice: 0, 
+      count: 0 
+    };
+    
     return {
       name: service.name,
       data: {
         totalPrice: serviceData.totalPrice,
+        totalPurchasePrice: serviceData.totalPurchasePrice,
         count: serviceData.count
       }
     };
@@ -168,12 +264,14 @@ async function getMonthlyExpenseReport(res, start, end, month, selectedServiceId
   serviceResults.forEach(({ name, data }) => {
     results[name] = data;
     totalExpense += data.totalPrice;
+    totalPurchaseExpense += data.totalPurchasePrice;
   });
 
   return res.json({
     period: `Tháng ${month}`,
     data: results,
     totalExpense: totalExpense,
+    totalPurchaseExpense: totalPurchaseExpense,
     summary: {
       totalServices: Object.keys(results).length,
       totalRecords: Object.values(results).reduce((sum, item) => sum + item.count, 0)
@@ -188,39 +286,86 @@ async function getYearlyExpenseReport(res, start, end, year, selectedServiceIds 
   const monthlyData = {};
   const yearlyTotals = {};
   let grandTotal = 0;
+  let grandPurchaseTotal = 0;
 
   // Khởi tạo dữ liệu cho 12 tháng
   for (let month = 1; month <= 12; month++) {
     monthlyData[month] = {};
     for (const service of services) {
-      monthlyData[month][service.name] = { totalPrice: 0, count: 0 };
+      monthlyData[month][service.name] = { totalPrice: 0, totalPurchasePrice: 0, count: 0 };
     }
   }
 
   // Khởi tạo tổng năm cho từng dịch vụ
   for (const service of services) {
-    yearlyTotals[service.name] = { totalPrice: 0, count: 0 };
+    yearlyTotals[service.name] = { totalPrice: 0, totalPurchasePrice: 0, count: 0 };
   }
 
   // Sử dụng Promise.all để tối ưu hiệu suất
   const servicePromises = services.map(async (service) => {
-    const aggregation = await service.model.aggregate([
-      {
-        $match: {
-          [service.dateField]: { $gte: start, $lt: end }
+    let aggregation;
+    
+    if (service.planRef && service.planModel) {
+      // Có purchasePrice - cần join với plans
+      const planModel = require(`../../models/plans/${service.planModel.toLowerCase().replace('plans', '')}/model`);
+      
+      aggregation = await service.model.aggregate([
+        {
+          $match: {
+            [service.dateField]: { $gte: start, $lt: end }
+          }
+        },
+        {
+          $lookup: {
+            from: service.planModel.toLowerCase(),
+            localField: service.planRef,
+            foreignField: '_id',
+            as: 'plan'
+          }
+        },
+        {
+          $unwind: {
+            path: '$plan',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $group: {
+            _id: { $month: `$${service.dateField}` },
+            totalPrice: { $sum: `$${service.priceField}` },
+            totalPurchasePrice: { 
+              $sum: { 
+                $ifNull: ['$plan.purchasePrice', 0] 
+              } 
+            },
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { _id: 1 }
         }
-      },
-      {
-        $group: {
-          _id: { $month: `$${service.dateField}` },
-          totalPrice: { $sum: `$${service.priceField}` },
-          count: { $sum: 1 }
+      ]);
+    } else {
+      // Không có purchasePrice (như Website)
+      aggregation = await service.model.aggregate([
+        {
+          $match: {
+            [service.dateField]: { $gte: start, $lt: end }
+          }
+        },
+        {
+          $group: {
+            _id: { $month: `$${service.dateField}` },
+            totalPrice: { $sum: `$${service.priceField}` },
+            totalPurchasePrice: { $sum: 0 },
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { _id: 1 }
         }
-      },
-      {
-        $sort: { _id: 1 }
-      }
-    ]);
+      ]);
+    }
 
     return { service: service.name, data: aggregation };
   });
@@ -233,13 +378,16 @@ async function getYearlyExpenseReport(res, start, end, year, selectedServiceIds 
       const month = item._id;
       monthlyData[month][service] = {
         totalPrice: item.totalPrice,
+        totalPurchasePrice: item.totalPurchasePrice,
         count: item.count
       };
       yearlyTotals[service].totalPrice += item.totalPrice;
+      yearlyTotals[service].totalPurchasePrice += item.totalPurchasePrice;
       yearlyTotals[service].count += item.count;
     });
 
     grandTotal += yearlyTotals[service].totalPrice;
+    grandPurchaseTotal += yearlyTotals[service].totalPurchasePrice;
   });
 
   // Format dữ liệu tháng
@@ -247,7 +395,8 @@ async function getYearlyExpenseReport(res, start, end, year, selectedServiceIds 
     month: `Tháng ${month}`,
     monthNumber: parseInt(month),
     services: monthlyData[month],
-    monthlyTotal: Object.values(monthlyData[month]).reduce((sum, service) => sum + service.totalPrice, 0)
+    monthlyTotal: Object.values(monthlyData[month]).reduce((sum, service) => sum + service.totalPrice, 0),
+    monthlyPurchaseTotal: Object.values(monthlyData[month]).reduce((sum, service) => sum + service.totalPurchasePrice, 0)
   }));
 
   return res.json({
@@ -255,10 +404,12 @@ async function getYearlyExpenseReport(res, start, end, year, selectedServiceIds 
     monthlyData: formattedMonthlyData,
     yearlyTotals: yearlyTotals,
     grandTotal: grandTotal,
+    grandPurchaseTotal: grandPurchaseTotal,
     summary: {
       totalServices: services.length,
       totalRecords: Object.values(yearlyTotals).reduce((sum, item) => sum + item.count, 0),
-      averageMonthlyExpense: grandTotal / 12
+      averageMonthlyExpense: grandTotal / 12,
+      averageMonthlyPurchaseExpense: grandPurchaseTotal / 12
     }
   });
 }

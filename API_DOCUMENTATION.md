@@ -72,6 +72,61 @@ http://localhost:{PORT}/api
 | DELETE | `/:id` | Xóa hợp đồng | ✅ |
 | GET | `/:id/payment-history` | Lấy lịch sử thanh toán | ✅ |
 
+### Chi tiết Contract APIs
+
+#### PUT `/api/contracts/:id` - Cập nhật hợp đồng
+
+**Request Body:**
+```json
+{
+  "amountPaid": 1000000,
+  "paymentMethod": 0,
+  "paymentNote": "Thanh toán lần 1"
+}
+```
+
+**Payment Method Values:**
+- `0`: Chuyển khoản (mặc định)
+- `1`: Tiền mặt
+
+**Note:** `paymentMethod` là optional, nếu không cung cấp sẽ mặc định là 0 (chuyển khoản).
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Cập nhật thành công!",
+  "data": {
+    "contractCode": "HD_1234",
+    "customer": "...",
+    "financials": {
+      "totalAmount": 2000000,
+      "amountPaid": 1000000,
+      "amountRemaining": 1000000,
+      "isFullyPaid": false
+    }
+  }
+}
+```
+
+#### GET `/api/contracts/:id/payment-history` - Lấy lịch sử thanh toán
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "amount": 1000000,
+      "method": 0,
+      "note": "Thanh toán lần 1",
+      "paymentDate": "2025-01-10T10:30:00.000Z",
+      "createdBy": "admin"
+    }
+  ]
+}
+```
+
 ## Service Plan APIs
 
 ### Domain Plans (`/api/plans/domain`)

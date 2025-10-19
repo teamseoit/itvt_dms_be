@@ -88,10 +88,20 @@ const contractController = {
         return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng." });
       }
 
-      const { amountPaid, paymentMethod, paymentNote } = req.body;
+      const { amountPaid, method, paymentNote } = req.body;
       if (typeof amountPaid !== 'number') {
         return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền thanh toán hợp lệ." });
       }
+
+      // Validate payment method: 0 = chuyển khoản, 1 = tiền mặt
+      if (method !== undefined && ![0, 1].includes(method)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Phương thức thanh toán không hợp lệ." 
+        });
+      }
+
+      const validPaymentMethod = method !== undefined ? method : 0;
 
       const prevPaid = contract.financials.amountPaid || 0;
       const total = Math.round(contract.financials.totalAmount);
@@ -116,7 +126,7 @@ const contractController = {
         await ContractPaymentHistory.create({
           contractId: contract._id,
           amount: paymentThisTime,
-          method: paymentMethod || 'Chuyển khoản',
+          method: validPaymentMethod,
           note: paymentNote || '',
           createdBy: req.auth?.username || req.auth?._id || 'system'
         });

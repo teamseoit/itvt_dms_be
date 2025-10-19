@@ -16,8 +16,9 @@ const paymentHistorySchema = new mongoose.Schema({
     default: Date.now
   },
   method: {
-    type: String,
-    default: 'Chuyển khoản'
+    type: Number,
+    enum: [0, 1], // 0 = chuyển khoản, 1 = tiền mặt
+    required: true
   },
   note: {
     type: String

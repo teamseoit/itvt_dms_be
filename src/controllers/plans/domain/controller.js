@@ -7,6 +7,9 @@ const SslServices = require("../../../models/services/ssl/model");
 const MaintenanceServices = require("../../../models/services/maintenance/model");
 const DomainITVT = require("../../../models/itvt/domain/model");
 const SslITVT = require("../../../models/itvt/ssl/model");
+const EmailITVT = require("../../../models/itvt/email/model");
+const HostingITVT = require("../../../models/itvt/hosting/model");
+
 const logAction = require("../../../middleware/actionLogs");
 
 const domainPlansController = {
@@ -184,7 +187,9 @@ const domainPlansController = {
         sslServicesCount,
         maintenanceServicesCount,
         domainITVTCount,
-        sslITVTCount
+        sslITVTCount,
+        emailITVTCount,
+        hostingITVTCount
       ] = await Promise.all([
         DomainServices.countDocuments({ domainPlan: id }),
         EmailServices.countDocuments({ domain_plan_id: id }),
@@ -193,12 +198,14 @@ const domainPlansController = {
         SslServices.countDocuments({ domain_plan_id: id }),
         MaintenanceServices.countDocuments({ domain_plan_id: id }),
         DomainITVT.countDocuments({ domain_plan_id: id }),
-        SslITVT.countDocuments({ domain_plan_id: id })
+        SslITVT.countDocuments({ domain_plan_id: id }),
+        EmailITVT.countDocuments({ domain_plan_id: id }),
+        HostingITVT.countDocuments({ domain_plan_id: id })
       ]);
 
       const totalUsage = domainServicesCount + emailServicesCount + hostingServicesCount + 
                         websiteServicesCount + sslServicesCount + maintenanceServicesCount + 
-                        domainITVTCount + sslITVTCount;
+                        domainITVTCount + sslITVTCount + emailITVTCount + hostingITVTCount;
 
       if (totalUsage > 0) {
         return res.status(400).json({
@@ -212,7 +219,9 @@ const domainPlansController = {
             sslServices: sslServicesCount,
             maintenanceServices: maintenanceServicesCount,
             domainITVT: domainITVTCount,
-            sslITVT: sslITVTCount
+            sslITVT: sslITVTCount,
+            emailITVT: emailITVTCount,
+            hostingITVT: hostingITVTCount,
           }
         });
       }

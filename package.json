@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
-    "update-domain-status": "node scripts/updateDomainStatus.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",

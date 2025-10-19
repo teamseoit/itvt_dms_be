@@ -16,6 +16,8 @@ const MobileNetworkServices = require("../../models/services/mobile-network/mode
 const Contracts = require("../../models/contracts/model");
 const DomainITVT = require("../../models/itvt/domain/model");
 const SslITVT = require("../../models/itvt/ssl/model");
+const EmailITVT = require("../../models/itvt/email/model");
+const HostingITVT = require("../../models/itvt/hosting/model");
 
 const checkServicesLinked = async (customerId) => {
   const services = [
@@ -40,7 +42,7 @@ const checkServicesLinked = async (customerId) => {
   }
   
   // Kiểm tra các dịch vụ ITVT
-  const itvtServices = [DomainITVT, SslITVT];
+  const itvtServices = [DomainITVT, SslITVT, EmailITVT, HostingITVT];
   for (const svc of itvtServices) {
     const hasITVTService = await svc.exists({ customer_id: customerId });
     if (hasITVTService) {

@@ -13,8 +13,19 @@ const backupsSchema = new mongoose.Schema({
     type: Number
   },
   createdBy: {
-    type: String
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true
   },
+  status: {
+    type: String,
+    enum: ['processing', 'completed', 'failed'],
+    default: 'processing'
+  },
+  description: {
+    type: String,
+    default: 'Backup tự động'
+  }
 }, {timestamps: true});
 
 module.exports = mongoose.model('Backups', backupsSchema);

@@ -33,6 +33,9 @@ const customerSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  dateOfBirth: {
+    type: Date, 
+  },
   companyName: {
     type: String,
     trim: true
